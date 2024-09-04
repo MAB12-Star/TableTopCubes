@@ -1,0 +1,16 @@
+.img-thumbnail {
+    width: 200px;
+    height: 200px;
+    object-fit: cover; /* Ensures the image covers the entire area without stretching */
+}
+
+.heading {
+    font-weight: bolder;
+    font-size: 100px;
+    color: aqua;
+    text-shadow: 
+    -3px -3px 0 rgb(243, 114, 209),  
+    3px -3px 0 rgb(243, 114, 209),  
+    -3px 3px 0 rgb(243, 114, 209),  
+    3px 3px 0 rgb(243, 114, 209);  
+}
