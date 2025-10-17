@@ -3616,9 +3616,8 @@ input, select, textarea {
   color: #d1e5f9;
   padding: 2em 0 1.5em 0;
   display: flex;
-  align-items: flex-end; /* ⬅️ Align all content to bottom */
+  align-items: flex-start; /* ⬅️ Align all content to bottom */
   justify-content: center;
-
   background-image: url("images/overlay.png"), url("images/pattern-size1.svg");
   background-position: top left, center center;
   background-attachment: fixed, fixed;
@@ -4237,7 +4236,7 @@ input, select, textarea {
 }
 
 .game-thumb {
-  width: 80px;            /* feel free to tweak 180–240px */
+  width: 100px;            /* feel free to tweak 180–240px */
   max-width: 100%;
   border-radius: 14px;
   box-shadow: 0 6px 22px rgba(0,0,0,.18);
@@ -4263,7 +4262,7 @@ input, select, textarea {
 }
 
 .icon {
-  width: 300px;            /* feel free to tweak 180–240px */
+  width: 400px;            /* feel free to tweak 180–240px */
   max-width: 100%;
  
 
