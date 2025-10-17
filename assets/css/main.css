@@ -3610,29 +3610,59 @@ input, select, textarea {
 
 /* Header */
 
-	#header {
-		background-color: #4696e5;
-		color: #d1e5f9;
-		padding: 4.5em 0 2.5em 0 ;
-		-moz-align-items: center;
-		-webkit-align-items: center;
-		-ms-align-items: center;
-		align-items: center;
-		display: -moz-flex;
-		display: -webkit-flex;
-		display: -ms-flex;
-		display: flex;
-		-moz-justify-content: center;
-		-webkit-justify-content: center;
-		-ms-justify-content: center;
-		justify-content: center;
-		background-image: url("images/overlay.png"), url("images/pattern-size1.svg");
-		background-position: top left, center center;
-		background-attachment: fixed, fixed;
-		background-size: auto, cover;
-		height: 100vh;
-		min-height: 35em;
-	}
+
+#header {
+  background-color: #4696e5;
+  color: #d1e5f9;
+  padding: 2em 0 1.5em 0;
+  display: flex;
+  align-items: flex-end; /* ⬅️ Align all content to bottom */
+  justify-content: center;
+
+  background-image: url("images/overlay.png"), url("images/pattern-size1.svg");
+  background-position: top left, center center;
+  background-attachment: fixed, fixed;
+  background-size: auto;
+  height: 55vh;
+  min-height: 25em;
+}
+
+#header .header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* ⬅️ Both sides bottom-aligned */
+  width: 90%;
+  max-width: 1100px;
+}
+
+/* Left text */
+#header .content {
+  text-align: right;
+  margin-right: 4em;
+}
+
+/* Right icon + games group */
+#header .aln-center {
+  text-align: center;
+}
+
+#header .inner img.icon {
+  width: 250px;
+  margin-bottom: 0.5em;
+}
+
+.d-flex.text-center.flex-wrap {
+  align-items: flex-end;
+}
+
+.game-thumb {
+  width: 80px;
+  border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.18);
+  transition: transform .2s ease;
+  background: #fff;
+}
+
 
 		#header input[type="submit"],
 		#header input[type="reset"],
@@ -4147,3 +4177,97 @@ input, select, textarea {
 		}
 
 	}
+
+	.game-logo {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+.game-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Retro AR Games Section Styles --- */
+
+#games .game-logo {
+  width: 50%;
+  max-width: 180px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#games .game-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+#games .nav-pills .nav-link {
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+}
+
+#games .nav-pills .nav-link.active {
+  background-color: #00bfa6;
+  color: #fff;
+  border-radius: 10px;
+}
+
+#games h6 {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* Make the three-game logo row responsive */
+#games .d-flex img {
+  transition: all 0.3s ease-in-out;
+}
+
+#games .d-flex img:hover {
+  transform: translateY(-5px);
+}
+
+/* Simple image-link cards */
+.game-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+}
+
+.game-thumb {
+  width: 80px;            /* feel free to tweak 180–240px */
+  max-width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.18);
+  transition: transform .2s ease, box-shadow .2s ease;
+  background: #fff;        /* keeps edges clean on dark images */
+}
+
+.game-link:hover .game-thumb,
+.game-link:focus .game-thumb {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.26);
+}
+
+.game-title {
+  margin-top: .6rem;
+  font-weight: 700;
+  color: #222;
+}
+
+
+.game-thumb:hover {
+  transform: scale(1.05);
+}
+
+.icon {
+  width: 300px;            /* feel free to tweak 180–240px */
+  max-width: 100%;
+ 
+
+}
+
+
+
