@@ -3613,31 +3613,19 @@ input, select, textarea {
 	#header {
   background-color: #4696e5;
   color: #d1e5f9;
-  padding: 3em 0 1.5em 0; /* reduced from 4.5em 0 2.5em 0 */
-  
-  -moz-align-items: center;
-  -webkit-align-items: center;
-  -ms-align-items: center;
-  align-items: center;
-
-  display: -moz-flex;
-  display: -webkit-flex;
-  display: -ms-flex;
-  display: flex;
-
-  -moz-justify-content: center;
-  -webkit-justify-content: center;
-  -ms-justify-content: center;
-  justify-content: center;
-
-  background-image: url("images/overlay.png"), url("images/pattern-size1.svg");
+  background-image: url("assets/images/overlay.png"), url("assets/images/pattern-size1.svg");
   background-position: top left, center center;
   background-attachment: fixed, fixed;
   background-size: auto;
-
-  height: 55vh;       /* reduced from 100vh */
-  min-height: 25em;   /* reduced from 35em */
+  display: flex;
+  align-items: flex-start; /* Push content up */
+  justify-content: center;
+  padding-top: 5em;
+  padding-bottom: 3em;
+  height: auto; /* Let it size naturally */
+  min-height: 35em;
 }
+
 
 
 		#header input[type="submit"],
@@ -4238,12 +4226,63 @@ input, select, textarea {
   transform: scale(1.05);
 }
 
-.icon {
-  width: 300px;            /* feel free to tweak 180–240px */
+.Icon {
+width: px;   /* or 500px if you want even bigger */
   max-width: 100%;
- 
-
 }
+/* Keep everything inside header aligned to bottom */
+#header {
+  background-color: #4696e5;
+  color: #d1e5f9;
+  padding: 2em 0 1.5em 0;
+  display: flex;
+  align-items: flex-end; /* ⬅️ Align all content to bottom */
+  justify-content: center;
+
+  background-image: url("images/overlay.png"), url("images/pattern-size1.svg");
+  background-position: top left, center center;
+  background-attachment: fixed, fixed;
+  background-size: auto;
+  height: 55vh;
+  min-height: 10em;
+}
+
+#header .header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* ⬅️ Both sides bottom-aligned */
+  width: 90%;
+  max-width: 1100px;
+}
+
+/* Left text */
+#header .content {
+  text-align: right;
+  margin-right: 4em;
+}
+
+/* Right icon + games group */
+#header .aln-center {
+  text-align: center;
+}
+
+#header .inner img.icon {
+  width: 250px;
+  margin-bottom: 0.5em;
+}
+
+.d-flex.text-center.flex-wrap {
+  align-items: flex-end;
+}
+
+.game-thumb {
+  width: 80px;
+  border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.18);
+  transition: transform .2s ease;
+  background: #fff;
+}
+
 
 
 
