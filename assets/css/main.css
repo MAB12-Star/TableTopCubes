@@ -3618,12 +3618,12 @@ input, select, textarea {
   background-attachment: fixed, fixed;
   background-size: auto;
   display: flex;
-  align-items: flex-start; /* Push content up */
+  align-items: flex-end; /* Push content up */
   justify-content: center;
   padding-top: 5em;
   padding-bottom: 3em;
   height: auto; /* Let it size naturally */
-  min-height: 35em;
+  min-height: 50em;
 }
 
 
@@ -4253,6 +4253,7 @@ width: px;   /* or 500px if you want even bigger */
   align-items: flex-end; /* ⬅️ Both sides bottom-aligned */
   width: 90%;
   max-width: 1100px;
+  
 }
 
 /* Left text */
@@ -4282,7 +4283,159 @@ width: px;   /* or 500px if you want even bigger */
   transition: transform .2s ease;
   background: #fff;
 }
+/* Container for the rotating images */
+.image-rotator {
+position: relative;
+  width: 400px;              /* bigger size */
+  height: 400px;             /* same as width for square layout */
+  margin: 0 auto;
+  overflow: hidden;          /* hides overflow if images differ slightly in size */
+}
 
+/* Base image style */
+.image-rotator img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;               /* make each image fill the container */
+  height: auto;
+  opacity: 0;
+  animation: fadeCycle 12s infinite; /* 3 images × 4s = 12s total */
+  transition: opacity 1s ease-in-out;
+  object-fit: contain;       /* ensures full image fits inside the box */
+}
 
+/* Animation delays so each shows 4s apart */
+.image-rotator img:nth-child(1) {
+  animation-delay: 0s;
+}
+.image-rotator img:nth-child(2) {
+  animation-delay: 4s;
+}
+.image-rotator img:nth-child(3) {
+  animation-delay: 8s;
+}
+
+/* Fade in/out timing */
+@keyframes fadeCycle {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  33% { opacity: 1; }
+  41% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Make the header responsive: images above text on mobile */
+#header .header-inner {
+  display: flex;
+  flex-direction: column;        /* stack by default (mobile first) */
+  align-items: center;
+  text-align: center;
+}
+
+#header .image-rotator {
+  order: -1;                     /* move above the text */
+  margin-bottom: 1rem;
+  width: min(90vw, 400px);       /* responsive width for phones */
+}
+
+/* Desktop: let the header be as tall as needed */
+@media (min-width: 992px) {
+  #header {
+    height: auto;        /* override fixed height */
+    min-height: 0;       /* remove the floor if you had one */
+    padding: 6rem 0 4rem;/* add space instead of fixed height */
+    overflow: visible;   /* make sure nothing gets clipped */
+  }
+  #header .image-rotator img {
+    max-width: 520px;    /* or whatever you like */
+    height: auto;
+  }
+}
+/* Base mobile layout (stacked) */
+#header .header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+#header .image-rotator {
+  order: -1; /* images above on mobile */
+  margin-bottom: 1.5rem;
+  width: min(90vw, 400px);
+}
+
+/* Desktop layout (side by side, image on right) */
+@media (min-width: 992px) {
+  #header .header-inner {
+    flex-direction: row;               /* side-by-side */
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  #header .content {
+    flex: 1;
+    padding-right: 2rem;
+  }
+
+  #header .image-rotator {
+    order: 2;                          /* move to right */
+    flex: 1;
+    text-align: right;
+    margin-bottom: 0;
+    width: auto;
+  }
+
+  #header .image-rotator img {
+    max-width: 520px;
+    height: auto;
+    display: inline-block;
+  }
+}
+/* Stop cutting the hero: no fixed height */
+#header{
+  height: auto !important;          /* override any fixed height (e.g., 55vh) */
+  min-height: 60vh;                 /* roomy but flexible */
+  padding-block: 4rem;
+  overflow: visible;                /* let content extend if needed */
+}
+
+/* Desktop: keep image on the right and fully visible */
+@media (min-width: 992px){
+  #header .header-inner{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  #header .content{
+    flex: 1 1 50%;
+    padding-right: 2rem;
+  }
+
+  #header .image-rotator{
+    flex: 1 1 50%;
+    text-align: right;
+  }
+
+  /* Cap image height to viewport so it never gets cropped */
+  #header .image-rotator img{
+    height: auto;
+    width: auto;
+    max-height: clamp(280px, 42vh, 560px);  /* adjust limits if you want it bigger/smaller */
+    display: inline-block;
+  }
+}
+
+/* Mobile: stack with images above text (keep if you were using this) */
+@media (max-width: 991.98px){
+  #header .header-inner{ display:flex; flex-direction:column; align-items:center; text-align:center; }
+  #header .image-rotator{ order:-1; margin-bottom:1.25rem; }
+  #header .image-rotator img{ max-width:min(90vw, 420px); height:auto; }
+}
 
 
