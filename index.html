@@ -1,237 +1,37 @@
-<!DOCTYPE HTML>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>TableTop Cubes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <link rel="stylesheet" href="assets/css/main.css" />
-  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07131d">
+<title>TableTop Cubes — Three games. One table.</title>
+<meta name="description" content="Your table. Your arcade. Stack and clear in Cubes, eat and grow in Cube Snake, and bounce and aim in Pongo. Discover TableTop Cubes on Meta Quest.">
+<link rel="canonical" href="https://www.tabletopcubes.com/">
+<meta property="og:title" content="TableTop Cubes — Three games. One table."><meta property="og:description" content="A miniature mixed-reality arcade in your room. Discover Cubes, Cube Snake, and Pongo on Meta Quest."><meta property="og:image" content="https://www.tabletopcubes.com/assets/refresh/cover.png"><meta property="og:url" content="https://www.tabletopcubes.com/"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/refresh/icon.png"><link rel="stylesheet" href="assets/css/refresh.css">
 </head>
-
-<body class="is-preload">
-
-  <!-- Navbar -->
-  <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">TableTop Cubes</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="https://bit.ly/3WF2988">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="pages/PrivacyPolicy.html">Privacy Policy</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
- <!-- Header -->
-<header id="header">
-  <div class="header-inner">
-    <div class="content">
-      <h1><a href="#">TableTop Cubes</a></h1>
-      <p>Now In The Meta App Store!<br>Re-Making 80's Classics in a 3D AR Environment</p>
-      <ul class="actions">
-        <li><a href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/"
-               class="button primary icon solid fa-download">Meta App Store</a></li>
-        <li><a href="#one" class="button icon solid fa-chevron-down scrolly">Learn More</a></li>
-      </ul>
-    </div>
-
-  <div class="image-rotator">
-  <img src="./assets/images/TR_Snake.png" class="icon mb-3" alt="Snake">
-  <img src="./assets/images/TR_Pongo.png" class="icon mb-3" alt="Pongo">
-  <img src="./assets/images/TR_Cubes.png" class="icon mb-3" alt="Cubes">
-</div>
-
-    
-    </div>
-  </div>
-</header>
-
-
-
-
-<!-- Games Section -->
-<section id="games" class="wrapper py-3">
-  <div class="inner text-center">
-    <header class="mb-3">
-      <h2>Our Retro AR Games</h2>
-      <p class="text-muted">Click a game to watch the trailer</p>
-    </header>
-
-    <div class="d-flex justify-content-center flex-wrap gap-4 mb-4">
-      <!-- TableTop Cubes -->
-      <div class="text-center">
-        <a href="#" class="game-thumb-link" data-video="https://www.youtube.com/embed/UVHtz07T3Z0">
-          <img src="./assets/images/TT_Cubes.png" alt="TableTop Cubes" class="game-thumb">
-          <h6 class="fw-bold mt-2">TableTop Cubes</h6>
-        </a>
-      </div>
-
-      <!-- Pongo -->
-      <div class="text-center">
-        <a href="#" class="game-thumb-link" data-video="https://www.youtube.com/embed/aoII5mCIf4E">
-          <img src="./assets/images/Pongo.png" alt="Pongo" class="game-thumb">
-          <h6 class="fw-bold mt-2">Pongo</h6>
-        </a>
-      </div>
-
-      <!-- Cube Snake -->
-      <div class="text-center">
-        <a href="#" class="game-thumb-link" data-video="https://www.youtube.com/embed/IBTq2vxMpVE">
-          <img src="./assets/images/Cube_Snake.png" alt="Cube Snake" class="game-thumb">
-          <h6 class="fw-bold mt-2">Cube Snake</h6>
-        </a>
-      </div>
-    </div>
-
-    <!-- Video Player -->
-    <div id="gameVideoWrapper" class="ratio ratio-16x9" style="max-width: 900px; margin: 0 auto; display:none;">
-      <iframe id="gameVideoFrame" src="" title="Game Video"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    </div>
-  </div>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header><nav class="wrap nav" aria-label="Main navigation"><a class="brand" href="./"><img src="assets/refresh/icon.png" width="40" height="40" alt="">TABLETOP <span>CUBES</span></a><div class="nav-links"><a href="#games">The games</a><a href="#trailer">Watch trailer</a><a href="#faq">Good to know</a></div><a class="button small" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Get it on Meta Quest ↗</a></nav></header>
+<main id="main">
+<section class="hero wrap" aria-labelledby="hero-title">
+<div><p class="eyebrow"><span class="dot"></span>MIXED REALITY. REAL ARCADE ENERGY.</p><h1 id="hero-title">Three games.<br>One <em>table.</em></h1><p class="hero-description">A little nostalgia. A whole new dimension. Turn your space into a miniature arcade with Cubes, Cube Snake, and Pongo.</p><div class="actions"><a class="button" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest ↗</a><a class="text-link" href="#trailer"><span class="play">▶</span> See it in action</a></div><div class="hero-meta"><span>03 games in one collection</span><span>Solo play</span><span>Meta Quest</span></div></div>
+<div class="hero-art"><div class="orbit"></div><div class="art-label"><span class="dot"></span>YOUR TABLE. YOUR ARCADE.</div><img src="assets/refresh/cubes-transparent.png" width="512" height="512" alt="Illustration of teal, violet, and amber cubes on a glowing tabletop grid"><div class="art-footer"><span>STACK / GROW / BOUNCE</span><span>001 — 003</span></div></div>
 </section>
-  <!-- One -->
- <section id="one" class="wrapper style2 special">
-  <header class="major">
-    <p class="ms-3">
-      <strong>Our Retro AR Collection</strong> — <em>TableTop Cubes, Pongo, and Cube Snake</em> — reimagines beloved 80s-style classics in immersive 3D Augmented Reality (AR). Each game transforms your environment into a fully interactive space where nostalgia meets innovation.
-    </p>
-
-    <p class="ms-3">
-      <strong>TableTop Cubes</strong> brings a new dimension to the timeless puzzle game, letting you stack, rotate, and clear shapes right on your coffee table in full 3D. Designed for solo play, it blends the challenge of traditional gameplay with a modern AR twist, allowing you to manipulate and interact with pieces as if they were physically present.
-    </p>
-
-    <p class="ms-3">
-      <strong>Pongo</strong> takes the legendary arcade paddle game and reimagines it in AR — you’ll rally a glowing energy ball across a floating arena that expands and contracts as you level up. With smooth physics and dynamic visuals, it’s an addictive and visually striking rework of a true classic.
-    </p>
-
-    <p class="ms-3">
-      <strong>Cube Snake</strong> revives the iconic snake gameplay with vibrant block-style motion in a 3D world, challenging your reflexes as you grow and navigate through an interactive grid. Each movement feels alive as the game blends precision and speed with immersive spatial effects.
-    </p>
-
-    <p class="ms-3">
-      Together, these titles celebrate the joy of retro gaming through cutting-edge AR technology, delivering fast, fun, and visually captivating experiences built in Unity and powered by the Meta SDK.
-    </p>
-  </header>
-</section>
-
-
- 
-
-<script>
-  // Switch YouTube video dynamically
-  const links = document.querySelectorAll('.game-thumb-link');
-  const videoWrapper = document.getElementById('gameVideoWrapper');
-  const iframe = document.getElementById('gameVideoFrame');
-
-  links.forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const videoUrl = link.getAttribute('data-video');
-      iframe.src = videoUrl + "?autoplay=1";
-      videoWrapper.style.display = "block";
-      window.scrollTo({ top: videoWrapper.offsetTop - 100, behavior: "smooth" });
-    });
-  });
-</script>
-
-
-  
-
-   
-
-   
-
- 
-  </section>
-
-  <!-- Two -->
-  <section id="two" class="wrapper">
-    <div class="inner alt">
-      <section class="spotlight">
-        <div class="image"><img src="./ASSETS/images/Icon512.png" alt="" /></div>
-        <div class="content">
-          <h3>Features</h3>
-          <ul>
-            <li>3D AR Gameplay: Experience Tetris like never before with a moveable 3D game board that appears right on your coffee table. Intuitive Controls: Easily adjust and interact with the game pieces using simple hand gestures.</li>
-            <li>Solo Play: Enjoy the challenge of beating your own high scores and improving your skills.</li>
-            <li>Dynamic Challenges: Each game is unique, with pieces that move and fit together with precision, ensuring a challenging and fun experience every time.</li>
-            <li>Built using Unity, the META SDK, and Avatar SDK, TableTop Cubes leverages the latest in AR technology to deliver an unparalleled gaming experience. Get ready to rediscover the fun of Tetris in a whole new dimension!</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="spotlight">
-        <div class="image"><img src="./ASSETS/images/Zapbox.jpg" alt="" /></div>
-        <div class="content">
-          <h3>Now On Zapbox</h3>
-          <p>Unleash the power of Mixed Reality on your iPhone
-            Give your iPhone a Mixed Reality (MR) makeover to experience immersive spatial videos & photos,
-            paint in virtual 3D, dive into MR gaming, and so much more – it’s the ultimate iPhone accessory!
-          </p>
-          <a class="btn btn-dark" href="https://www.zappar.com/zapbox/">Zapbox</a>
-        </div>
-      </section>
-
-      <section class="spotlight">
-        <div class="image"><img src="./ASSETS/images/pic01.jpg" alt="" /></div>
-        <div class="content">
-          <h3>Whats Next</h3>
-          <p>If you all are happy to play this game, I have similar retro style games coming down the pipeline.
-            Have ideas for others please email me!  MikeBlue247Dev@gmail.com
-          </p>
-        </div>
-      </section>
-    </div>
-  </section>
-
-  <!-- Three -->
-  <section id="three" class="wrapper style2 special">
-    <header class="major">
-      <h2>Enjoy The Game!</h2>
-      <p></p>
-    </header>
-    <ul class="actions special">
-      <li><a href="#" class="button primary icon solid fa-download">In Meta Store Now!</a></li>
-      <li><a href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/" class="button">Learn More</a></li>
-    </ul>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer bg-dark py-3 mt-auto">
-    <div class="container text-center">
-      <span class="text-light">TableTopCubes &copy; 2024</span>
-    </div>
-  </footer>
-
-  <!-- Scripts -->
-  <script src="assets/js/jquery.min.js"></script>
-  <script src="assets/js/jquery.scrolly.min.js"></script>
-  <script src="assets/js/browser.min.js"></script>
-  <script src="assets/js/breakpoints.min.js"></script>
-  <script src="assets/js/util.js"></script>
-  <script src="assets/js/main.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
-
-  <script>
-    // Optional: smooth-scroll back to the games section after clicking a top logo
-    document.querySelectorAll('.game-logo-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const y = document.querySelector('#games').offsetTop - 50;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      });
-    });
-  </script>
-</body>
-</html>
+<div class="ticker" aria-hidden="true"><div class="wrap"><span>STACK & CLEAR</span><b>✦</b><span>EAT & GROW</span><b>✦</b><span>BOUNCE & AIM</span><b>✦</b><span>PLAY IT YOUR WAY</span></div></div>
+<section class="section wrap" id="games"><div class="section-heading"><div><p class="eyebrow">MEET YOUR NEXT “ONE MORE GO”</p><h2>Pick your kind of play.</h2></div><p>Three familiar ideas, reimagined for the space around you.</p></div>
+<div class="game-grid">
+<article class="game-card" style="--game-color:#b28bff"><div class="game-image"><img src="assets/refresh/cubes-ai.png" width="2560" height="1440" loading="lazy" alt="AI-enhanced room image illustrating Cubes with colorful blocks and a cyan grid"><span>01 / CUBES</span></div><div class="game-content"><p class="kicker">THINK AHEAD. MAKE IT FIT.</p><h3>Stack. Clear. Repeat.</h3><p>Rotate and place colorful blocks, complete lines, and clear floors. Hold a piece for later and build combos for bonus points.</p><div class="chips"><span>Classic</span><span>Relaxed</span><span>3-minute Sprint</span></div></div></article>
+<article class="game-card" style="--game-color:#53e6ac"><div class="game-image"><img src="assets/refresh/snake-ai.png" width="2560" height="1440" loading="lazy" alt="AI-enhanced room image illustrating Cube Snake and its tabletop grid"><span>02 / CUBE SNAKE</span></div><div class="game-content"><p class="kicker">A CLASSIC WITH A GROWING TWIST.</p><h3>One more bite.</h3><p>Find the food, grow your trail, and plan your next turn. Keep moving as you chase a new personal best.</p><div class="chips"><span>Eat & grow</span><span>Personal bests</span></div></div></article>
+<article class="game-card" style="--game-color:#ffc25b"><div class="game-image"><img src="assets/refresh/pongo-ai.png" width="2560" height="1440" loading="lazy" alt="AI-enhanced room image illustrating Pongo with a ball, paddle, and cyan grid"><span>03 / PONGO</span></div><div class="game-content"><p class="kicker">FIND YOUR ANGLE. KEEP THE RALLY.</p><h3>Make every bounce count.</h3><p>Guide your moving paddle and steer the ball toward targets. Use tilt, rebounds, and a little timing to keep the action going.</p><div class="chips"><span>Paddle & ball</span><span>Ricochets</span></div></div></article>
+</div><p class="caption">Room images enhanced with AI. Interface details may differ from the game.</p></section>
+<section class="section trailer-section" id="trailer"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">REAL GAMEPLAY. RIGHT IN YOUR ROOM.</p><h2>Small arcade.<br>Big “one more run” energy.</h2></div><p>Take a look around the collection, from the shared hub to all three games.</p></div><div class="video-shell"><video controls playsinline preload="none" poster="assets/refresh/cubes-plan-ai.png" aria-label="TableTop Cubes collection gameplay trailer"><source src="assets/refresh/trailer.mp4" type="video/mp4">Your browser cannot play this video. <a href="assets/refresh/trailer.mp4">Download the trailer</a>.</video></div><p class="caption">Recorded gameplay on Meta Quest. The poster image is enhanced with AI.</p></div></section>
+<section class="section wrap hub-section"><div class="hub-image"><img src="assets/refresh/hub-ai.png" width="2560" height="1440" loading="lazy" alt="AI-enhanced illustration of the home hub with Cube Snake, Cubes, and Pongo game cards"><p class="caption">THE NEW HOME HUB · AI-ENHANCED IMAGE</p></div><div><p class="eyebrow">ONE COLLECTION. A FRESH LOOK.</p><h2>Less searching.<br>More playing.</h2><p class="intro">Find your next game in a redesigned hub with animated previews and personal bests. Matching dark boards, cyan grids, and clear menus tie the whole arcade together.</p><ol class="features"><li><strong>A pace for every mood</strong><p>Play Classic, slow things down in Relaxed, or take on a three-minute Sprint in Cubes.</p></li><li><strong>A reason to come back</strong><p>Chase personal records and check the rankings. Cubes online rankings are for Classic mode.</p></li><li><strong>Get straight to the good part</strong><p>Opening instructions, help and pause screens, and shared music and sound settings.</p></li></ol></div></section>
+<section class="section wrap faq-section" id="faq"><div><p class="eyebrow">BEFORE YOU PLAY</p><h2>Good to know.</h2></div><div class="faq">
+<details open><summary>What’s included?</summary><p>Cubes, Cube Snake, and Pongo are part of the TableTop Cubes collection. Cubes includes Classic, Relaxed, and three-minute Sprint modes.</p></details>
+<details><summary>Where can I play?</summary><p>Find TableTop Cubes on the Meta Horizon Store for Meta Quest. The store listing has current supported headsets, pricing, and release details.</p></details>
+<details><summary>Is this a multiplayer game?</summary><p>The collection is designed for solo play. Online rankings let you compare scores without a live multiplayer match.</p></details>
+<details><summary>How do I get help or share an idea?</summary><p>Use the in-game instructions and help screens, or email <a href="mailto:MikeBlue247Dev@gmail.com">MikeBlue247Dev@gmail.com</a>. We’d love to hear what you’d like to play next.</p></details>
+</div></section>
+<section class="closing wrap"><p class="eyebrow">YOUR NEXT HIGH SCORE STARTS HERE.</p><h2>Make room for<br>a little <em>play.</em></h2><a class="button" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Find TableTop Cubes on Meta Quest ↗</a></section>
+</main>
+<footer class="wrap"><a class="brand" href="./">TABLETOP CUBES</a><p>© 2026 CC Creations</p><div><a href="pages/About.html">About</a><a href="pages/PrivacyPolicy.html">Privacy policy</a><a href="mailto:MikeBlue247Dev@gmail.com">Contact</a></div></footer>
+</body></html>
