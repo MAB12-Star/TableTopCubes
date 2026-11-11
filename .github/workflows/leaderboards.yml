@@ -1,0 +1,45 @@
+name: Sync Unity leaderboards
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/leaderboards.yml'
+      - 'scripts/fetch_scores.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unity-leaderboards
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch top five scores per game
+        working-directory: ${{ runner.temp }}
+        env:
+          UNITY_ENVIRONMENT_ID: ${{ secrets.UNITY_ENVIRONMENT_ID }}
+          UNITY_SERVICE_KEY_ID: ${{ secrets.UNITY_SERVICE_KEY_ID }}
+          UNITY_SERVICE_SECRET: ${{ secrets.UNITY_SERVICE_SECRET }}
+        run: python3 "$GITHUB_WORKSPACE/scripts/fetch_scores.py"
+      - name: Publish leaderboard snapshot
+        shell: bash
+        run: |
+          remote_branch=$(git ls-remote origin refs/heads/leaderboard-data)
+          if [[ -n "$remote_branch" ]]; then
+            git fetch origin refs/heads/leaderboard-data
+            git switch --create leaderboard-data FETCH_HEAD
+          else
+            git switch --orphan leaderboard-data
+          fi
+          cp "$RUNNER_TEMP/leaderboard.json" leaderboard.json
+          git add leaderboard.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Refresh leaderboard scores'
+          git push origin HEAD:refs/heads/leaderboard-data
