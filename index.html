@@ -6,11 +6,11 @@
 <meta name="description" content="Your table. Your arcade. Stack and clear in Cubes, eat and grow in Cube Snake, and bounce and aim in Pongo. Discover TableTop Cubes on Meta Quest.">
 <link rel="canonical" href="https://www.tabletopcubes.com/">
 <meta property="og:title" content="TableTop Cubes — Three games. One table."><meta property="og:description" content="A miniature mixed-reality arcade in your room. Discover Cubes, Cube Snake, and Pongo on Meta Quest."><meta property="og:image" content="https://www.tabletopcubes.com/assets/refresh/cover.png"><meta property="og:url" content="https://www.tabletopcubes.com/"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="assets/refresh/icon.png"><link rel="stylesheet" href="assets/css/refresh.css?v=20261110-hub2">
+<link rel="icon" href="assets/refresh/icon.png"><link rel="stylesheet" href="assets/css/refresh.css?v=20261111-scores">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header><nav class="wrap nav" aria-label="Main navigation"><a class="brand" href="./"><img src="assets/refresh/icon.png" width="40" height="40" alt="">TABLETOP <span>CUBES</span></a><div class="nav-links"><a href="#games">The games</a><a href="#trailer">Watch trailer</a><a href="#faq">Good to know</a></div><a class="button small" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Get it on Meta Quest ↗</a></nav></header>
+<header><nav class="wrap nav" aria-label="Main navigation"><a class="brand" href="./"><img src="assets/refresh/icon.png" width="40" height="40" alt="">TABLETOP <span>CUBES</span></a><div class="nav-links"><a href="#games">The games</a><a href="#trailer">Watch trailer</a><a href="#leaderboards">Leaderboards</a></div><a class="button small" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Get it on Meta Quest ↗</a></nav></header>
 <main id="main">
 <section class="hero wrap" aria-labelledby="hero-title">
 <div><p class="eyebrow"><span class="dot"></span>MIXED REALITY. REAL ARCADE ENERGY.</p><h1 id="hero-title">Three games.<br>One <em>table.</em></h1><p class="hero-description">A little nostalgia. A whole new dimension. Turn your space into a miniature arcade with Cubes, Cube Snake, and Pongo.</p><div class="actions"><a class="button" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest ↗</a><a class="text-link" href="#trailer"><span class="play">▶</span> See it in action</a></div><div class="hero-meta"><span>03 games in one collection</span><span>Solo play</span><span>Meta Quest</span></div></div>
@@ -25,6 +25,47 @@
 </div><p class="caption">Room images enhanced with AI. Interface details may differ from the game.</p></section>
 <section class="section trailer-section" id="trailer"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">REAL GAMEPLAY. RIGHT IN YOUR ROOM.</p><h2>Small arcade.<br>Big “one more run” energy.</h2></div><p>Take a look around the collection, from the shared hub to all three games.</p></div><div class="video-shell"><video controls playsinline preload="none" poster="assets/refresh/cubes-plan-ai.png" aria-label="TableTop Cubes collection gameplay trailer"><source src="assets/refresh/trailer.mp4" type="video/mp4">Your browser cannot play this video. <a href="assets/refresh/trailer.mp4">Download the trailer</a>.</video></div><p class="caption">Recorded gameplay on Meta Quest. The poster image is enhanced with AI.</p></div></section>
 <section class="section wrap hub-section"><div class="hub-image" style="min-width:0;align-self:center"><img src="assets/refresh/hub-ai.png" width="2560" height="1440" style="display:block;width:100%;max-width:100%;height:auto;aspect-ratio:16/9;object-fit:contain" loading="lazy" alt="AI-enhanced illustration of the home hub with Cube Snake, Cubes, and Pongo game cards"><p class="caption">THE NEW HOME HUB · AI-ENHANCED IMAGE</p></div><div><p class="eyebrow">ONE COLLECTION. A FRESH LOOK.</p><h2>Less searching.<br>More playing.</h2><p class="intro">Find your next game in a redesigned hub with animated previews and personal bests. Matching dark boards, cyan grids, and clear menus tie the whole arcade together.</p><ol class="features"><li><strong>A pace for every mood</strong><p>Play Classic, slow things down in Relaxed, or take on a three-minute Sprint in Cubes.</p></li><li><strong>A reason to come back</strong><p>Chase personal records and check the rankings. Cubes online rankings are for Classic mode.</p></li><li><strong>Get straight to the good part</strong><p>Opening instructions, help and pause screens, and shared music and sound settings.</p></li></ol></div></section>
+<section id="leaderboards" class="section wrap" aria-labelledby="leaderboard-heading">
+  <h2 id="leaderboard-heading">Leaderboards</h2><p class="intro">Top five scores for each game.</p>
+  <label for="score-game">Game</label>
+  <select id="score-game">
+    <option value="cubes">Cubes Classic</option>
+    <option value="snake">Cube Snake</option>
+    <option value="pongo">Pongo</option>
+  </select>
+  <table aria-labelledby="leaderboard-heading">
+    <thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Points</th></tr></thead>
+    <tbody id="score-rows"></tbody>
+  </table>
+  <p id="score-status" role="status">Loading scores…</p>
+</section>
+<script type="module">
+const game = document.querySelector('#score-game');
+const rows = document.querySelector('#score-rows');
+const status = document.querySelector('#score-status');
+const points = new Intl.NumberFormat();
+try {
+  const response = await fetch('https://raw.githubusercontent.com/MAB12-Star/TableTopCubes/leaderboard-data/leaderboard.json', {credentials: 'omit'});
+  if (!response.ok) throw new Error('Scores unavailable');
+  const snapshot = await response.json();
+  function render() {
+    const entries = snapshot.scores[game.value];
+    rows.replaceChildren(...entries.map(entry => {
+      const row = document.createElement('tr');
+      for (const value of [entry.rank, entry.name.replace(/#\d+$/, ''), points.format(entry.points)]) {
+        row.insertCell().textContent = value;
+      }
+      return row;
+    }));
+    const updated = new Date(snapshot.updated).toLocaleString();
+    status.textContent = entries.length ? 'Updated ' + updated : 'No scores yet.';
+  }
+  render();
+  game.addEventListener('change', render);
+} catch {
+  status.textContent = 'Scores are temporarily unavailable.';
+}
+</script>
 <section class="section wrap faq-section" id="faq"><div><p class="eyebrow">BEFORE YOU PLAY</p><h2>Good to know.</h2></div><div class="faq">
 <details open><summary>What’s included?</summary><p>Cubes, Cube Snake, and Pongo are part of the TableTop Cubes collection. Cubes includes Classic, Relaxed, and three-minute Sprint modes.</p></details>
 <details><summary>Where can I play?</summary><p>Find TableTop Cubes on the Meta Horizon Store for Meta Quest. The store listing has current supported headsets, pricing, and release details.</p></details>
