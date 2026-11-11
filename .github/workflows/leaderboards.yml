@@ -25,7 +25,7 @@ jobs:
       - name: Fetch top five scores per game
         working-directory: ${{ runner.temp }}
         env:
-          UNITY_ENVIRONMENT_ID: ${{ secrets.UNITY_ENVIRONMENT_ID }}
+          UNITY_ENVIRONMENT_ID: 69d59334-c519-4a2f-b8b3-bf8a1f33debd
           UNITY_SERVICE_KEY_ID: ${{ secrets.UNITY_SERVICE_KEY_ID }}
           UNITY_SERVICE_SECRET: ${{ secrets.UNITY_SERVICE_SECRET }}
         run: python3 "$GITHUB_WORKSPACE/scripts/fetch_scores.py"
