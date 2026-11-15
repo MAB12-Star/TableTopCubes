@@ -27,3 +27,8 @@
 #leaderboards th:last-child { width: 6rem; }
 #leaderboards :is(th, td):last-child { text-align: right; }
 #score-status { color: #b7c8d1; font-size: .875rem; }
+
+.controls-section{border-top:1px solid var(--line)}
+.control-card{background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--game-color);border-radius:8px;padding:24px}
+.control-card p{color:var(--muted);font-size:14px;margin-top:10px}
+@media(max-width:760px){.nav-links{gap:clamp(9px,3vw,22px);flex-wrap:wrap}}
