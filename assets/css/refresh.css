@@ -32,3 +32,20 @@
 .control-card{background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--game-color);border-radius:8px;padding:24px}
 .control-card p{color:var(--muted);font-size:14px;margin-top:10px}
 @media(max-width:760px){.nav-links{gap:clamp(9px,3vw,22px);flex-wrap:wrap}}
+
+/* November media additions: earlier screenshots/videos remain unchanged. */
+@media(max-width:1200px){.nav{flex-wrap:wrap;padding-block:14px}.nav-links{order:3;width:100%;justify-content:center;flex-wrap:wrap}.nav>.button{margin-left:auto}}
+.latest-clips{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:36px}
+.latest-clips article{display:grid;grid-template-columns:1fr minmax(150px,42%);gap:22px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:24px;background:var(--panel);min-width:0}
+.latest-clips article p:not(.eyebrow){margin-top:16px;color:var(--muted);font-size:16px}
+.latest-clips video{width:100%;aspect-ratio:9/16;object-fit:contain;background:#020b13;border-radius:8px}
+.companion-showcase{background:#0a1a25;border-block:1px solid var(--line)}
+.companion-layout{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center}
+.companion-feature img{width:100%;height:auto;border:1px solid var(--line);border-radius:12px}
+.companion-layout .intro{font-size:17px}.animal-lineup{width:min(100%,360px);height:auto;margin:30px auto 0;border-radius:10px}
+.fresh-gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.fresh-gallery-grid figure{margin:0;min-width:0}.fresh-gallery-grid img{width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;border:1px solid var(--line);border-radius:8px}
+.fresh-gallery-grid figcaption{font-size:16px;color:var(--muted);margin-top:12px}
+@media(max-width:1050px){.latest-clips article{grid-template-columns:1fr}.latest-clips video{max-height:440px}.companion-layout{gap:30px}}
+@media(max-width:760px){.latest-clips,.companion-layout,.fresh-gallery-grid{grid-template-columns:1fr}.latest-clips article{grid-template-columns:1fr minmax(120px,38%);padding:18px;gap:16px}.latest-clips h3{font-size:22px}.latest-clips .eyebrow{font-size:11px}.companion-feature{max-width:480px;margin:auto}.companion-layout .animal-lineup{max-width:420px}}
+@media(max-width:400px){.latest-clips article{grid-template-columns:1fr}.latest-clips video{max-height:420px}}
