@@ -29,4 +29,12 @@ Static source/bundle checks, glTF validation, animation/geometry checks, preserv
 
 Open https://www.tabletopcubes.com/vr/ in the headset browser (not Unity/Quest Link). Select Enter VR and allow the session. Try each game's display with left and right controllers; check the hit dot, Play/Pause, Sound, Close, and Meta Store. If using hands, test pinch selection separately; availability depends on browser support. Confirm the penguin animates, textures are correct, and the room stays stable when turning your head. Exit VR and check the normal site still works.
 
-This is a showroom, not a browser port of the playable Unity games.
+## Playable mini samples
+
+Selecting a display's PLAY circle hides that exhibit and opens its video panel plus a separate mini board in front. Either WebXR input source uses the same point-and-select buttons. Desktop users choose Play mini sample in the details dialog, then use the same controls with mouse/touch.
+
+- Cubes: four small piece shapes, one-cell movement, bounded quarter turns, hard drop, line clearing, game over and a 30-point sample goal.
+- Snake: a 10x10 sample board, growth/food, wall/self collision, directional buttons and a five-food goal.
+- Pongo: point at the board to position the paddle, bounce at a moving target, three lives and a 50-point goal. Left/right buttons are also available.
+
+Only one sample runs at once. Sample cells use five instanced batches; targets, generated text textures, mesh buffers and materials are released when closing or switching. No network gameplay or Unity services are used. These are simplified browser samples, not full ports of the Unity games or their gesture recognizers.

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {XRHandModelFactory} from 'three/addons/webxr/XRHandModelFactory.js';
+import {createSample} from './samples.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -27,6 +28,7 @@ const dialog = $('#details');
 const video = $('#game-video');
 let selected = null, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mixer, companion, textureVideo, viewPoster;
+let sample;
 const targets = [], controllers = [], pointers = [], textures = new Map();
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -124,7 +126,8 @@ for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const screen=new THREE.Mesh(new THREE.PlaneGeometry(2.12,1.193),new THREE.MeshBasicMaterial({color:'#254854'}));
   screen.position.set(0,1.58,-.24);interact(screen,()=>openGame(id),table);
   loadTexture(media+game.image).then(t=>{screen.material.map=t;screen.material.color.set('white');screen.material.needsUpdate=true;}).catch(()=>status.textContent='Some artwork could not load. You can still explore the game details.');
-  button('EXPLORE',0,.99,.70,()=>openGame(id),table,1.3);
+  const playRing=new THREE.Mesh(new THREE.CircleGeometry(.20,32),new THREE.MeshBasicMaterial({color:'#4df2e0'}));playRing.position.set(0,1.02,.71);interact(playRing,()=>openGame(id),table);
+  const playText=label('PLAY',400,120,'#06131d',64);playText.scale.setScalar(.32);playText.position.set(0,1.02,.72);table.add(playText);
 }
 // A real imported KUBIKOS model, converted to GLB; original UVs and idle keys retained.
 const pedestal=box(.95,.5,.85,materials.table,0,.25,.75);
@@ -184,29 +187,35 @@ try {
 
 // In-world viewer: interactive even when browser HTML is hidden in immersive VR.
 const viewer=new THREE.Group();viewer.position.set(0,0,1.05);viewer.visible=false;scene.add(viewer);
-box(2.8,3.1,.06,materials.dark,0,1.7,0,viewer);
-let viewerTitle=label('GAMEPLAY',1100,160,'#e7ffff',64);viewerTitle.position.set(0,2.99,.045);viewer.add(viewerTitle);
-const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.MeshBasicMaterial({color:'white'}));videoScreen.position.set(0,1.99,.05);viewer.add(videoScreen);
-const viewerHint=label('REAL GAMEPLAY / FULL GAME ON META QUEST',1300,100,'#90c8cd',34);viewerHint.scale.setScalar(.75);viewerHint.position.set(0,1.20,.06);viewer.add(viewerHint);
-button('PLAY / PAUSE',-.68,.87,.07,()=>toggleVideo(),viewer,1.14);
-button('SOUND',.68,.87,.07,()=>{video.muted=!video.muted;},viewer,1.14);
-button('CLOSE',-.68,.43,.07,closeGame,viewer,1.14);
-button('META STORE',.68,.43,.07,async()=>{await renderer.xr.getSession()?.end();location.href=storeURL;},viewer,1.14);
+box(2.8,2.7,.06,materials.dark,0,2.4,0,viewer);
+box(2.72,.025,.025,materials.glow,0,3.72,.04,viewer);
+let viewerTitle=label('GAMEPLAY',1100,160,'#4df2e0',64);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
+const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.MeshBasicMaterial({color:'white'}));videoScreen.position.set(0,2.55,.05);viewer.add(videoScreen);
+const viewerHint=label('TRY THE SAMPLE / FULL GAME ON META QUEST',1300,100,'#ffcb73',34);viewerHint.scale.setScalar(.75);viewerHint.position.set(0,1.72,.06);viewer.add(viewerHint);
+button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
+button('SOUND',-.34,1.40,.07,()=>{video.muted=!video.muted;},viewer,.6);
+button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
+button('GET GAME',1.02,1.40,.07,async()=>{await renderer.xr.getSession()?.end();location.href=storeURL;},viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;
 async function openGame(id) {
   const game=games[id];if(!game)return;
+  sample?.dispose();sample=null;
+  tables.forEach((t,i)=>t.visible=['cubes','snake','pongo'][i]!==id);
   video.pause();selected=id;
   video.removeAttribute('src');video.load();video.poster=media+game.image;
   $('#detail-title').textContent=game.name;$('#detail-description').textContent=game.description;$('#detail-help').textContent=game.help;
   $('#watch-video').textContent='Watch gameplay';
   viewer.remove(viewerTitle);viewerTitle.geometry.dispose();viewerTitle.material.map.dispose();viewerTitle.material.dispose();
-  viewerTitle=label(game.name.toUpperCase(),1100,160,game.color,70);viewerTitle.position.set(0,2.99,.045);viewer.add(viewerTitle);
-  viewer.visible=renderer.xr.isPresenting;
-  if(viewer.visible){
+  viewerTitle=label('TABLETOP / '+game.name.toUpperCase(),1100,160,'#4df2e0',60);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
+  viewer.visible=true;
+  sample=createSample(id,viewer,{box,label,button,targets});
+  if(renderer.xr.isPresenting){
     const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
-    viewer.position.set(head.x+headForward.x*2.6,0,head.z+headForward.z*2.6);
+    viewer.position.set(head.x+headForward.x*3.3,0,head.z+headForward.z*3.3);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
+  }else{
+    viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
   }
   viewPoster=await loadTexture(media+game.image).catch(()=>null);
   if(selected!==id)return;
@@ -221,7 +230,8 @@ async function toggleVideo() {
     catch(error){status.textContent='Playback was blocked. Select Play on the video to try again.';console.warn(error);}
   } else {video.pause();$('#watch-video').textContent='Continue gameplay';}
 }
-function closeGame() {video.pause();video.removeAttribute('src');video.load();viewer.visible=false;selected=null;if(dialog.open)dialog.close();}
+function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+$('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,3.0);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGame();});
@@ -233,6 +243,7 @@ function motionUI() {$('#motion').textContent=paused?'Resume animation':'Pause a
 motionUI();$('#motion').addEventListener('click',()=>{paused=!paused;motionUI();});
 let downX=0,downY=0;
 canvas.addEventListener('pointerdown',e=>{downX=e.clientX;downY=e.clientY;});
+canvas.addEventListener('pointermove',e=>{if(dialog.open)return;pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const h=hits()[0];h?.object.userData.aim?.(h.point);});
 const activeTargets=[], hitResults=[];
 function hits() {
   activeTargets.length=0;hitResults.length=0;
@@ -295,6 +306,7 @@ renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
     if(!paused)mixer?.update(delta);
+    if(!document.hidden&&!dialog.open)sample?.update(delta);
     if(!renderer.xr.isPresenting){
       controls.update();
       camera.position.x=THREE.MathUtils.clamp(camera.position.x,-5.65,5.65);
@@ -309,10 +321,11 @@ renderer.setAnimationLoop(time=>{
         p.dot.visible=!!hit&&controllers[i].visible;
         p.line.scale.z=hit?hit.distance:4;
         if(hit)p.dot.position.copy(hit.point);
+        hit?.object.userData.aim?.(hit.point);
       }
     }
     renderer.render(scene,camera);
   }
 });
 // Development/device checks can inspect cost without logging every frame.
-window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,get selected(){return selected;}};
+window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,get sample(){return sample;},get selected(){return selected;}};
