@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Small browser-native arcade samples, independent of the Unity game rules.
-export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart}){
+export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart,onBack,onClose}){
   const root=new THREE.Group();root.name=`Playable ${id} sample`;parent.add(root);
   const ownedTargets=[],geometries=new Set(),materials=new Set();
   const startIndex=targets.length;
@@ -56,6 +56,8 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
     update=dt=>{paddle.position.x=px;if(running){bx+=vx*dt;bz+=vz*dt;if(Math.abs(bx)>.76){bx=Math.sign(bx)*.76;vx=-vx;}if(bz<-.73){bz=-.73;vz=Math.abs(vz);if(Math.abs(bx-target.position.x)<.24){score+=10;hits++;target.position.x=[-.48,0,.48][hits%3];say(`PONGO / +10 / ${score} OF 50`);if(score>=50){running=false;say('YOU WIN / 50 POINTS / PLAY AGAIN');}}}if(vz>0&&bz>.58&&bz<.79&&Math.abs(bx-px)<.32){bz=.58;vz=-Math.abs(vz);vx=(bx-px)*2.2;}if(bz>.9){lives--;if(!lives){running=false;say('GAME OVER / SELECT START TO RETRY');}else{bx=0;bz=0;vz=.7;say(`PONGO / ${lives} LIVES / ${score} POINTS`);}}}ball.position.set(bx,.94,1.04+bz);};
     say('PONGO / SELECT START / HIT THE TARGET');update(0);
   }
+  const back=button('STEP BACK',1.45,.52,2.15,()=>onBack?.(),root,.7);back.scale.y=.5;back.name='STEP BACK';
+  const close=button('BACK TO ROOM',1.45,.22,2.15,()=>onClose?.(),root,.7);close.scale.y=.5;close.name='BACK TO ROOM';
   const begin=reset;reset=()=>{notified=false;begin();onRestart?.();};
   ownedTargets.push(...targets.slice(startIndex));
   return {root,update,reset,get score(){return score;},dispose(){for(const t of ownedTargets){const i=targets.indexOf(t);if(i>=0)targets.splice(i,1);}root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geometries.add(o.geometry);for(const m of [].concat(o.material||[]))materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose();});parent.remove(root);}};

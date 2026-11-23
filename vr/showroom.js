@@ -148,6 +148,7 @@ const teleportSpots=[
 const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
 const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();
 let lastTeleport=-Infinity;
+let navigationNeedsPlacement=true;
 // The application's camera is parented to the rig and receives the tracked pose
 // from WebXRManager. getWorldPosition on the detached ArrayCamera overwrites its
 // composed matrixWorld with a local pose, losing the rig offset after teleport.
@@ -159,8 +160,27 @@ function teleportTo(spot){
   // including after walking physically away from the tracking-space origin.
   rig.position.x+=spot.x-head.x;rig.position.z+=spot.z-head.z;
   rig.updateMatrixWorld(true);lastTeleport=performance.now();
+  placeRoomNavigation();
   pointers.forEach(p=>p.dot.visible=false);
   return true;
+}
+function stepBack(){
+  if(!renderer.xr.isPresenting||purchase.visible||performance.now()-lastTeleport<400)return false;
+  const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
+  if(headForward.lengthSq()<.01)return false;headForward.normalize();
+  const x=head.x-headForward.x*.6,z=head.z-headForward.z*.6;
+  // Keep a standing-space margin around walls, exhibit tables and pedestal.
+  if(Math.abs(x)>5.35||Math.abs(z)>5.35||tables.some(t=>Math.abs(x-t.position.x)<1.55&&Math.abs(z-t.position.z)<1.05)||(Math.abs(x)<.8&&Math.abs(z-.75)<.8))return false;
+  rig.position.x+=x-head.x;rig.position.z+=z-head.z;rig.updateMatrixWorld(true);lastTeleport=performance.now();placeRoomNavigation();return true;
+}
+const roomNavigation=new THREE.Group();roomNavigation.visible=false;scene.add(roomNavigation);
+button('STEP BACK',-.5,0,0,stepBack,roomNavigation,.9);
+button('WELCOME',.5,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.9);
+function placeRoomNavigation(){
+  const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
+  if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
+  roomNavigation.position.set(head.x+headForward.x*2.1,Math.max(.45,head.y-.65),head.z+headForward.z*2.1);
+  roomNavigation.rotation.y=Math.atan2(-headForward.x,-headForward.z);navigationNeedsPlacement=false;
 }
 for(const spot of teleportSpots){
   const pad=new THREE.Group();pad.position.set(spot.x,.018,spot.z);teleportGroup.add(pad);spot.pad=pad;
@@ -236,7 +256,7 @@ async function openGame(id) {
   viewer.remove(viewerTitle);viewerTitle.geometry.dispose();viewerTitle.material.map.dispose();viewerTitle.material.dispose();
   viewerTitle=label('TABLETOP / '+game.name.toUpperCase(),1100,160,'#4df2e0',60);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
   viewer.visible=true;
-  sample=createSample(id,viewer,{box,label,button,targets,onEnd:endSample,onRestart:resumeSample});
+  sample=createSample(id,viewer,{box,label,button,targets,onEnd:endSample,onRestart:resumeSample,onBack:stepBack,onClose:closeGame});
   if(renderer.xr.isPresenting){
     const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -244,7 +264,7 @@ async function openGame(id) {
     // without changing the headset camera or its physical tracking origin.
     const fit=THREE.MathUtils.clamp(head.y/1.65,.45,1.2);
     viewer.scale.setScalar(fit);
-    viewer.position.set(head.x+headForward.x*3.3*fit,head.y-1.65*fit,head.z+headForward.z*3.3*fit);
+    viewer.position.set(head.x+headForward.x*3.8*fit,head.y-1.65*fit,head.z+headForward.z*3.8*fit);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
   }else{
     viewer.scale.setScalar(1);viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
@@ -263,7 +283,7 @@ async function toggleVideo() {
   } else {video.pause();$('#watch-video').textContent='Continue gameplay';}
 }
 function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
-$('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,3.0);controls.target.set(0,1.5,.1);controls.update();});
+$('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,3.5);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGame();});
@@ -308,6 +328,7 @@ renderer.xr.addEventListener('sessionstart',()=>{
   desktopPose={position:camera.position.clone(),quaternion:camera.quaternion.clone()};
   controls.enabled=false;camera.position.set(0,0,0);camera.quaternion.identity();rig.position.set(0,0,3.65);
   teleportGroup.visible=true;lastTeleport=-Infinity;
+  navigationNeedsPlacement=true;
   document.body.classList.add('xr-active');if(dialog.open)dialog.close();closeGame();
   enterVR.textContent='Exit VR';
 });
@@ -315,6 +336,7 @@ renderer.xr.addEventListener('sessionend',()=>{
   rig.position.set(0,0,0);if(desktopPose){camera.position.copy(desktopPose.position);camera.quaternion.copy(desktopPose.quaternion);}
   controls.enabled=true;controls.update();document.body.classList.remove('xr-active');closeGame();
   teleportGroup.visible=false;
+  roomNavigation.visible=false;
   pointers.forEach(p=>p.dot.visible=false);enterVR.textContent='Enter VR';
 });
 enterVR.addEventListener('click',async()=>{
@@ -347,6 +369,8 @@ renderer.setAnimationLoop(time=>{
     }
     else {
       const head=getHeadPosition();
+      if(navigationNeedsPlacement&&head.y>.3)placeRoomNavigation();
+      roomNavigation.visible=!viewer.visible;
       for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
       for(let i=0;i<controllers.length;i++) {
         castController(controllers[i]);const hit=hits()[0],p=pointers[i];
@@ -360,4 +384,4 @@ renderer.setAnimationLoop(time=>{
   }
 });
 // Development/device checks can inspect cost without logging every frame.
-window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,get sample(){return sample;},get selected(){return selected;}};
+window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,stepBack,get sample(){return sample;},get selected(){return selected;}};
