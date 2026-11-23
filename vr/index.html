@@ -7,9 +7,16 @@
   <meta name="description" content="Step inside the TableTop Cubes showroom. Explore Cubes, Cube Snake and Pongo, meet a companion, and watch real solo and multiplayer gameplay.">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
-  <link rel="stylesheet" href="showroom.css?v=20261123-sample-stores">
+  <link rel="stylesheet" href="showroom.css?v=20261123-polish">
 </head>
 <body>
+  <section id="loading-screen" aria-labelledby="loading-title" role="status">
+    <img src="../assets/refresh/icon.png" width="84" height="84" alt="">
+    <p class="eyebrow">TABLETOP / ARCADE</p><h2 id="loading-title">Preparing your arcade</h2>
+    <progress id="loading-progress" max="100" value="0" aria-label="Showroom loading"></progress>
+    <p id="loading-detail">Loading characters, materials and game displays…</p>
+    <a href="../">Back to website</a>
+  </section>
   <a class="skip" href="#games">Skip to game displays</a>
   <canvas id="room" aria-label="Interactive 3D arcade showroom. Use the game buttons below for an accessible alternative."></canvas>
   <header class="topbar">
@@ -47,7 +54,10 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261123-wrap-depth').catch(() => {
+    import('./showroom.bundle.js?v=20261123-polished-companions').catch(() => {
+      document.querySelector('#loading-title').textContent='The arcade could not load';
+      document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
+      document.querySelector('#loading-progress').hidden=true;
       document.querySelector('#status').innerHTML='The 3D room could not load. <a href="../#latest-media">Watch gameplay on the website</a>.';
       document.querySelector('#enter-vr').textContent='3D unavailable';
     });

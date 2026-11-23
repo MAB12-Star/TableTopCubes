@@ -8,10 +8,14 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   const startIndex=targets.length;
   const colors=[0x53e6ac,0xb28bff,0xffc25b,0x66bfff,0xff7b9c];
   const cellGeo=new RoundedBoxGeometry(.147,.147,.147,1,.014);
-  const mats=colors.map(color=>new THREE.MeshStandardMaterial({color,roughness:.28,metalness:.12}));
+  const mats=colors.map(color=>new THREE.MeshPhysicalMaterial({color,roughness:.25,metalness:.14,clearcoat:.35,clearcoatRoughness:.3}));
   const cells=mats.map(mat=>{const m=new THREE.InstancedMesh(cellGeo,mat,1400);m.count=0;m.frustumCulled=false;root.add(m);return m;});
   const cellTransform=new THREE.Object3D(),counts=[0,0,0,0,0];
-  box(1.85,.06,1.85,new THREE.MeshStandardMaterial({color:0x0c2533}),0,.72,1.04,root);
+  const deck=box(1.85,.06,1.85,new THREE.MeshStandardMaterial({color:0x0c2533,metalness:.35,roughness:.32}),0,.72,1.04,root);
+  deck.geometry.dispose();deck.geometry=new RoundedBoxGeometry(1.85,.06,1.85,2,.025);
+  const trim=new THREE.MeshBasicMaterial({color:0x4de4d3});
+  for(const x of [-.91,.91])box(.018,.012,1.82,trim,x,.75,1.04,root);
+  for(const z of [.13,1.95])box(1.82,.012,.018,trim,0,.75,z,root);
   const grid=new THREE.GridHelper(1.76,10,0x4ce8d4,0x245160);grid.position.set(0,.755,1.04);root.add(grid);
   let caption,captionText='',score=0,running=false,ended=false,timer=0,notified=false;
   function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.48);caption.position.set(0,.84,2.15);root.add(caption);if(!notified&&/^(GAME OVER|YOU WIN)/.test(text)){notified=true;onEnd?.({won:text.startsWith('YOU WIN'),score,game:id});}}

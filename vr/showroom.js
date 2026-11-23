@@ -4,6 +4,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {XRHandModelFactory} from 'three/addons/webxr/XRHandModelFactory.js';
 import {createSample} from './samples.js';
 import {installScoreWalls} from './walls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -29,7 +30,13 @@ const enterVR = $('#enter-vr');
 const dialog = $('#details');
 const video = $('#game-video');
 let selected = null, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let vrSupported=false;
 let mixer, companion, textureVideo, viewPoster;
+const companionMixers=[];
+let loadingProgress=0;
+function loading(value,message){loadingProgress=Math.max(loadingProgress,value);$('#loading-progress').value=loadingProgress;$('#loading-detail').textContent=message;}
+const assetManager=new THREE.LoadingManager();
+assetManager.onProgress=(url,loaded,total)=>loading(Math.round(loaded/Math.max(total,1)*65),'Loading original characters and textures…');
 let sample;
 const targets = [], controllers = [], pointers = [], textures = new Map();
 const raycaster = new THREE.Raycaster();
@@ -47,6 +54,13 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.25;
 renderer.xr.enabled = true;
+// One prefiltered studio environment, generated once rather than real-time
+// reflections. It adds readable highlights to beveled blocks and animal forms.
+if(renderer.isWebGLRenderer){
+  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
+  const environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.75;
+  studio.dispose();pmrem.dispose();
+}
 const controls = new OrbitControls(camera,canvas);
 controls.target.set(0,1,-.7); controls.enableDamping=true;
 controls.minDistance=3; controls.maxDistance=11;
@@ -103,7 +117,7 @@ function label(text,width=1024,height=160,color='#eafafa',size=64,bg=null) {
 const roomTitle=label('TABLETOP / ARCADE',1600,180,'#e2f9f8',100);roomTitle.position.set(0,3.25,-5.84);scene.add(roomTitle);
 const roomSubtitle=label('THREE GAMES. ONE TABLE.',1400,100,'#62ddd4',42);roomSubtitle.position.set(0,2.88,-5.83);scene.add(roomSubtitle);
 const scoreWalls=installScoreWalls(scene);
-const loader=new THREE.TextureLoader();
+const loader=new THREE.TextureLoader(assetManager);
 async function loadTexture(url) {
   if(!textures.has(url))textures.set(url,loader.loadAsync(url).then(t=>{t.colorSpace=THREE.SRGBColorSpace;return t;}));
   return textures.get(url);
@@ -192,18 +206,20 @@ for(const spot of teleportSpots){
 const teleportHelp=label('MOVE: POINT AT A FLOOR RING / PINCH OR TRIGGER',1800,100,'#a6d6db',44);
 teleportHelp.position.set(0,2.58,-5.82);teleportGroup.add(teleportHelp);
 try {
-  const [gltf,atlas]=await Promise.all([new GLTFLoader().loadAsync('assets/penguin.glb'),loadTexture('assets/animal-atlas.webp')]);
+  const [models,atlas]=await Promise.all([Promise.all(['penguin','whitefox','unicorn'].map(name=>new GLTFLoader(assetManager).loadAsync(`assets/${name}.glb`))),loadTexture('assets/animal-atlas.webp')]);
   // Export kept the source FBX UVs verbatim without a baked glTF texture.
   // Preserve TextureLoader's vertical flip, matching the original FBX material.
   atlas.flipY=true;
-  companion=gltf.scene;
-  companion.traverse(o=>{if(o.isMesh){o.material.map=atlas;o.material.needsUpdate=true;}});
-  const bounds=new THREE.Box3().setFromObject(companion),size=bounds.getSize(new THREE.Vector3());
-  companion.scale.setScalar(.73/size.y);
-  const scaled=new THREE.Box3().setFromObject(companion),center=scaled.getCenter(new THREE.Vector3());
-  companion.position.set(-center.x,.53-scaled.min.y,.75-center.z);
-  scene.add(companion);mixer=new THREE.AnimationMixer(companion);
-  if(gltf.animations[0])mixer.clipAction(gltf.animations[0]).play();
+  models.forEach((gltf,i)=>{
+    companion=gltf.scene;companion.name=['Companion / Penguin','Companion / White Fox','Companion / Unicorn'][i];
+    companion.traverse(o=>{if(o.isMesh){o.material.map=atlas;o.material.roughness=.55;o.material.needsUpdate=true;}});
+    const bounds=new THREE.Box3().setFromObject(companion),size=bounds.getSize(new THREE.Vector3());
+    companion.scale.setScalar(Math.min(.36/size.y,.30/size.x,.40/size.z));
+    const scaled=new THREE.Box3().setFromObject(companion),center=scaled.getCenter(new THREE.Vector3());
+    companion.position.set((i-1)*.31-center.x,.53-scaled.min.y,.75-center.z);
+    scene.add(companion);mixer=new THREE.AnimationMixer(companion);companionMixers.push(mixer);
+    if(gltf.animations[0])mixer.clipAction(gltf.animations[0]).play();
+  });
   status.textContent='Room ready. Select a game to explore.';
 } catch(error) {
   console.warn('Companion could not load',error);
@@ -350,16 +366,30 @@ enterVR.addEventListener('click',async()=>{
 });
 try {
   const supported=!!navigator.xr&&await navigator.xr.isSessionSupported('immersive-vr');
-  enterVR.disabled=!supported;enterVR.textContent=supported?'Enter VR':'Explore in 3D';
+  vrSupported=supported;enterVR.disabled=true;enterVR.textContent=supported?'Enter VR':'Explore in 3D';
   if(!supported)status.textContent='Drag to explore here. Open this page in a supported headset browser for VR.';
 } catch {enterVR.textContent='Explore in 3D';enterVR.disabled=true;}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();});
 let previousTime=performance.now();
+await Promise.all(Object.values(games).map(game=>loadTexture(media+game.image).catch(()=>null)));
+loading(75,'Preparing lighting and sample graphics…');
+if(renderer.compileAsync){
+  const warmup=new THREE.Group();scene.add(warmup);
+  try{
+    for(const id of ['cubes','snake','pongo']){
+      const prepared=createSample(id,warmup,{box,label,button,targets});
+      try{await renderer.compileAsync(scene,camera);}finally{prepared.dispose();}
+    }
+  }finally{scene.remove(warmup);}
+}
+loading(100,'Ready to explore');
+$('#loading-screen').hidden=true;
+enterVR.disabled=!vrSupported;
 renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
-    if(!paused)mixer?.update(delta);
+    if(!paused)for(const m of companionMixers)m.update(delta);
     if(!document.hidden&&!dialog.open)sample?.update(delta);
     if(!renderer.xr.isPresenting){
       controls.update();

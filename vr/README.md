@@ -17,7 +17,7 @@ Standalone, buildless WebXR page at `/vr/`. The Unity game and its project setti
 
 `assets/penguin.glb`: derived from `Assets/KUBIKOS-Animated Cube Mini Animals 2/Animals2_Models/Penguin.fbx`, Idle frames 0–40 at 30fps, matching its Unity import metadata. Original model/texture remain subject to the purchased asset license; they are included only as assets of this showroom, not a reusable asset download offering.
 
-`assets/animal-atlas.webp`: original `KUBIKOS_Animals2_D.png`, downsampled to 1024 square for the small companion display. Original UVs are retained; runtime TextureLoader uses flipY=true.
+`assets/animal-atlas.webp`: original `KUBIKOS_Animals2_D.png`, downsampled to 2048 square for the small companion display. Original UVs are retained; runtime TextureLoader uses flipY=true.
 
 Three.js 0.187.0, self-hosted in `showroom.bundle.js`; see `THREE-LICENSE.txt`. The entry source is `showroom.js`. Rebuild with esbuild, ESM output, ES2022 target and minification. The developer's isolated dependency/build tools live outside the website repository at `C:/Users/micha/Documents/Codex/WebXR-Tools`; they do not affect the site's legacy package.json/node_modules.
 
@@ -52,3 +52,7 @@ Uses the existing public leaderboard snapshot, updated hourly by GitHub Actions.
 Samples now open at 3.8 normalized meters rather than 3.3, preserving the seated fit. Step Back moves the rig 0.6m opposite horizontal head direction while keeping the sample anchored and preserving tracked eye height. It debounces selects and rejects destinations near walls, tables or the companion pedestal. Room navigation has Step Back and Welcome; each sample has Step Back and Back to Room near its game controls.
 
 Current sample distance: 4.75 normalized meters, 25% beyond the previous 3.8m placement. Cubes Forward/Back moves the active piece through ten depth lanes with bounds and occupancy checks; cleared ten-cell lines collapse blocks above in the same lane. Snake wraps modulo ten across all four edges. Sample blocks use rounded geometry and shaded materials in five instanced batches; the Pongo paddle is rounded. Room Step Back and Welcome buttons are reduced, as is the sample's Step Back button.
+
+Graphics update: the original Penguin, White Fox and Unicorn share the pedestal at reduced scale. Each is fitted within 0.30m width and 0.36m height, retaining its original idle animation. The shared original animal atlas is now 2048px. Sample blocks have clearcoat highlights, rounded board edges, and cyan perimeter trim. A studio environment is prefiltered once at startup for material reflections; no real-time mirror or shadow passes are added.
+
+A full-page loading screen reports asset progress, waits for the three display posters and companions, and warms all three samples' shaders before enabling Enter VR. There is no forced waiting period. GPU appearance and frame timing require physical/browser QA; automated interaction tests mock the renderer and do not validate the lighting pass.
