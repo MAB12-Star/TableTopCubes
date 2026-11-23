@@ -8,8 +8,8 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   const startIndex=targets.length;
   const colors=[0x53e6ac,0xb28bff,0xffc25b,0x66bfff,0xff7b9c];
   const cellGeo=new RoundedBoxGeometry(.147,.147,.147,1,.014);
-  const mats=colors.map(color=>new THREE.MeshPhysicalMaterial({color,roughness:.25,metalness:.14,clearcoat:.35,clearcoatRoughness:.3}));
-  const cells=mats.map(mat=>{const m=new THREE.InstancedMesh(cellGeo,mat,1400);m.count=0;m.frustumCulled=false;root.add(m);return m;});
+  const mats=colors.map(color=>new THREE.MeshPhysicalMaterial({color,roughness:.38,metalness:.10,clearcoat:.18,clearcoatRoughness:.4}));
+  const cells=mats.map(mat=>{const m=new THREE.InstancedMesh(cellGeo,mat,1400);m.count=0;m.frustumCulled=false;m.castShadow=true;root.add(m);return m;});
   const cellTransform=new THREE.Object3D(),counts=[0,0,0,0,0];
   const deck=box(1.85,.06,1.85,new THREE.MeshStandardMaterial({color:0x0c2533,metalness:.35,roughness:.32}),0,.72,1.04,root);
   deck.geometry.dispose();deck.geometry=new RoundedBoxGeometry(1.85,.06,1.85,2,.025);
@@ -56,8 +56,10 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
     let px=0,bx=0,bz=.1,vx=.45,vz=.7,hits=0,lives=3;
     const paddle=box(.5,.08,.18,mats[3],0,.86,1.75,root);
     paddle.geometry.dispose();paddle.geometry=new RoundedBoxGeometry(.5,.08,.18,2,.025);
-    const ball= new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),mats[2]);root.add(ball);
+    paddle.castShadow=true;
+    const ball= new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),mats[2]);ball.castShadow=true;root.add(ball);
     const target=box(.35,.25,.22,mats[1],0,.94,.32,root);
+    target.castShadow=true;
     const aim=new THREE.Mesh(new THREE.PlaneGeometry(1.8,1.8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));aim.rotation.x=-Math.PI/2;aim.position.set(0,.78,1.04);root.add(aim);targets.push(aim);
     aim.userData.action=()=>{if(!running)reset();};aim.userData.aim=point=>{const local=root.worldToLocal(point.clone());px=THREE.MathUtils.clamp(local.x,-.63,.63);};
     ctl('LEFT',-.65,2.23,()=>{px=Math.max(-.63,px-.18);});ctl('START / RESET',0,2.23,()=>reset(),.8);ctl('RIGHT',.65,2.23,()=>{px=Math.min(.63,px+.18);});

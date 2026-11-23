@@ -5,6 +5,7 @@ import {XRHandModelFactory} from 'three/addons/webxr/XRHandModelFactory.js';
 import {createSample} from './samples.js';
 import {installScoreWalls} from './walls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -14,15 +15,15 @@ const games = {
   cubes: {name:'Cubes',tag:'STACK / CLEAR',color:'#b28bff',image:'cubes-solo.webp',
     description:'Find the fit. Turn colorful pieces, fill lines, and build your next personal best.',
     help:'Solo or Two Player: share a board and compete to complete lines. The full game includes hands, Touch controllers, and guided practice.',
-    video:'solo-24s.mp4'},
+    video:'assets/gameplay/cubes-gameplay.mp4'},
   snake: {name:'Cube Snake',tag:'EAT / GROW',color:'#53e6ac',image:'snake-solo.webp',
     description:'One more bite. Steer through a 3D grid, chase food, and keep your growing trail out of trouble.',
     help:'Solo or Two Player: chase a shared food cube and avoid both snakes. Try the full game’s animated hand and controller guides.',
-    video:'solo-and-online-40s.mp4'},
+    video:'assets/gameplay/snake-gameplay.mp4'},
   pongo: {name:'Pongo',tag:'BOUNCE / AIM',color:'#ffc25b',image:'pongo-solo.webp',
     description:'Find your angle. Bounce the ball toward targets and keep the rally alive.',
     help:'Solo or Two Player: each player controls a paddle and competes to hit the targets. Watch both the virtual room and passthrough in action.',
-    video:'multiplayer-two-worlds-30s.mp4'}
+    video:'assets/gameplay/pongo-gameplay.mp4'}
 };
 const canvas = $('#room');
 const status = $('#status');
@@ -52,13 +53,13 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.toneMappingExposure = .90;
 renderer.xr.enabled = true;
 // One prefiltered studio environment, generated once rather than real-time
 // reflections. It adds readable highlights to beveled blocks and animal forms.
 if(renderer.isWebGLRenderer){
   const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
-  const environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.75;
+  const environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.16;
   studio.dispose();pmrem.dispose();
 }
 const controls = new OrbitControls(camera,canvas);
@@ -66,9 +67,16 @@ controls.target.set(0,1,-.7); controls.enableDamping=true;
 controls.minDistance=3; controls.maxDistance=11;
 controls.maxPolarAngle=Math.PI*.48; controls.minPolarAngle=.35;
 controls.enablePan=false;
-scene.add(new THREE.HemisphereLight('#c8edff','#112c3a',2.6));
-const key = new THREE.DirectionalLight('#fff5de',3); key.position.set(3,7,5);scene.add(key);
-const rim = new THREE.DirectionalLight('#6ccfff',1.8);rim.position.set(-4,3,-5);scene.add(rim);
+scene.add(new THREE.HemisphereLight('#88a8c8','#08101d',.55));
+const key = new THREE.DirectionalLight('#f0d8bd',1.05); key.position.set(2.5,5,3);scene.add(key);
+const rim = new THREE.DirectionalLight('#4388ad',.65);rim.position.set(-4,3,-5);scene.add(rim);
+if(renderer.shadowMap){
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+  Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:16});
+  key.shadow.camera.updateProjectionMatrix();
+  key.shadow.bias=-.0003;key.shadow.normalBias=.018;
+}
 const materials = {
   floor:new THREE.MeshStandardMaterial({color:'#081822',roughness:.85}),
   wall:new THREE.MeshStandardMaterial({color:'#102431',roughness:.9}),
@@ -77,7 +85,7 @@ const materials = {
   glow:new THREE.MeshBasicMaterial({color:'#3ad4d0'})
 };
 function box(w,h,d,mat,x=0,y=0,z=0,parent=scene) {
-  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);parent.add(mesh);return mesh;
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);mesh.receiveShadow=!!mat.isMeshStandardMaterial;parent.add(mesh);return mesh;
 }
 // Port of TableTopVirtualRoom.BuildRoom: same 12m shell, ceiling, wall bays,
 // half-meter floor grid, and trim. Four batches rather than separate objects.
@@ -105,14 +113,16 @@ for(const [kind,boxes] of Object.entries(roomBoxes)){
   boxes.forEach((b,i)=>{instanceTransform.position.set(b.x,b.y,b.z);instanceTransform.scale.set(b.w,b.h,b.d);instanceTransform.updateMatrix();batch.setMatrixAt(i,instanceTransform.matrix);});
   batch.computeBoundingSphere();scene.add(batch);
 }
+const shadowFloor=new THREE.Mesh(new THREE.PlaneGeometry(11.8,11.8),new THREE.MeshStandardMaterial({color:'#0b1a26',roughness:.82,metalness:.12}));
+shadowFloor.rotation.x=-Math.PI/2;shadowFloor.position.y=.001;shadowFloor.receiveShadow=true;scene.add(shadowFloor);
 function label(text,width=1024,height=160,color='#eafafa',size=64,bg=null) {
   const c=document.createElement('canvas');c.width=width;c.height=height;
   const ctx=c.getContext('2d');
-  if(bg){ctx.fillStyle=bg;ctx.fillRect(0,0,width,height);}
+  if(bg){ctx.fillStyle=bg;ctx.fillRect(0,0,width,height);ctx.strokeStyle='#345263';ctx.lineWidth=3;ctx.strokeRect(3,3,width-6,height-6);ctx.fillStyle='#335d6b';ctx.fillRect(12,8,width-24,3);ctx.fillStyle='#173440';ctx.fillRect(12,height-10,width-24,3);}
   ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${size}px Arial`;
   ctx.fillText(text,width/2,height/2,width-40);
   const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
-  return new THREE.Mesh(new THREE.PlaneGeometry(width/400,height/400),new THREE.MeshBasicMaterial({map:texture,transparent:!bg,depthWrite:!!bg}));
+  return new THREE.Mesh(new THREE.PlaneGeometry(width/400,height/400),new THREE.MeshBasicMaterial({map:texture,transparent:!bg,depthWrite:!!bg,toneMapped:false}));
 }
 const roomTitle=label('TABLETOP / ARCADE',1600,180,'#e2f9f8',100);roomTitle.position.set(0,3.25,-5.84);scene.add(roomTitle);
 const roomSubtitle=label('THREE GAMES. ONE TABLE.',1400,100,'#62ddd4',42);roomSubtitle.position.set(0,2.88,-5.83);scene.add(roomSubtitle);
@@ -132,18 +142,25 @@ for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const game=games[id], table=new THREE.Group();
   table.position.set((i-1)*2.65,0,i===1?-2.0:-1.3);
   table.rotation.y=(1-i)*.23;scene.add(table);tables.push(table);
-  const accent=new THREE.MeshBasicMaterial({color:game.color});
-  box(2.25,.12,1.35,materials.table,0,.83,0,table);
-  box(.22,.77,.7,materials.dark,-.78,.38,0,table);box(.22,.77,.7,materials.dark,.78,.38,0,table);
+  const accent=new THREE.MeshBasicMaterial({color:game.color,toneMapped:false});
+  const consoleTop=box(2.25,.16,1.35,materials.table,0,.83,0,table);consoleTop.geometry.dispose();consoleTop.geometry=new RoundedBoxGeometry(2.25,.16,1.35,2,.05);consoleTop.castShadow=true;
+  const cabinet=box(1.84,.73,1.02,materials.dark,0,.38,0,table);cabinet.castShadow=true;
+  const plinth=box(2.20,.10,1.35,materials.dark,0,.05,0,table);plinth.castShadow=true;
+  for(const x of [-1.04,1.04]){const cheek=box(.16,.65,1.15,materials.table,x,.48,.04,table);cheek.castShadow=true;}
+  box(1.75,.035,.025,accent,0,.13,.52,table);
+  for(const x of [-1.09,1.09])box(.025,.64,.025,accent,x,.53,.64,table);
+  const badge=label('FREE PLAY / MINI ARCADE',900,120,'#8bb5c4',40,'#091823');badge.scale.setScalar(.64);badge.position.set(0,.43,.525);table.add(badge);
   box(2.18,.018,.025,accent,0,.904,.65,table);
   const grid=new THREE.GridHelper(1.15,10,game.color,'#23505c');grid.position.y=.9;table.add(grid);
+  box(2.36,.54,.14,materials.dark,0,2.48,-.39,table);
   const title=label(game.name.toUpperCase(),1000,180,game.color,86);title.position.set(0,2.57,-.3);title.scale.setScalar(.72);table.add(title);
   const caption=label(game.tag,1000,100,'#a8c8d5',42);caption.position.set(0,2.32,-.3);caption.scale.setScalar(.7);table.add(caption);
-  box(2.22,1.27,.07,materials.dark,0,1.58,-.29,table);
-  const screen=new THREE.Mesh(new THREE.PlaneGeometry(2.12,1.193),new THREE.MeshBasicMaterial({color:'#254854'}));
-  screen.position.set(0,1.58,-.24);interact(screen,()=>openGame(id),table);
+  const bezel=box(2.36,1.43,.16,materials.table,0,1.58,-.32,table);bezel.geometry.dispose();bezel.geometry=new RoundedBoxGeometry(2.36,1.43,.16,2,.05);
+  const screen=new THREE.Mesh(new THREE.PlaneGeometry(2.12,1.193),new THREE.MeshBasicMaterial({color:'#10222e',toneMapped:false}));
+  screen.position.set(0,1.58,-.225);interact(screen,()=>openGame(id),table);
   loadTexture(media+game.image).then(t=>{screen.material.map=t;screen.material.color.set('white');screen.material.needsUpdate=true;}).catch(()=>status.textContent='Some artwork could not load. You can still explore the game details.');
-  const playRing=new THREE.Mesh(new THREE.CircleGeometry(.20,32),new THREE.MeshBasicMaterial({color:'#4df2e0'}));playRing.position.set(0,1.02,.71);interact(playRing,()=>openGame(id),table);
+  const rimRing=new THREE.Mesh(new THREE.TorusGeometry(.21,.025,8,32),new THREE.MeshStandardMaterial({color:'#7aa4ad',metalness:.65,roughness:.35}));rimRing.position.set(0,1.02,.70);table.add(rimRing);
+  const playRing=new THREE.Mesh(new THREE.CircleGeometry(.19,32),new THREE.MeshBasicMaterial({color:game.color,toneMapped:false}));playRing.position.set(0,1.02,.71);interact(playRing,()=>openGame(id),table);
   const playText=label('PLAY',400,120,'#06131d',64);playText.scale.setScalar(.32);playText.position.set(0,1.02,.72);table.add(playText);
 }
 // A real imported KUBIKOS model, converted to GLB; original UVs and idle keys retained.
@@ -212,7 +229,7 @@ try {
   atlas.flipY=true;
   models.forEach((gltf,i)=>{
     companion=gltf.scene;companion.name=['Companion / Penguin','Companion / White Fox','Companion / Unicorn'][i];
-    companion.traverse(o=>{if(o.isMesh){o.material.map=atlas;o.material.roughness=.55;o.material.needsUpdate=true;}});
+    companion.traverse(o=>{if(o.isMesh){o.material.map=atlas;o.material.roughness=.72;o.material.needsUpdate=true;o.castShadow=true;}});
     const bounds=new THREE.Box3().setFromObject(companion),size=bounds.getSize(new THREE.Vector3());
     companion.scale.setScalar(Math.min(.36/size.y,.30/size.x,.40/size.z));
     const scaled=new THREE.Box3().setFromObject(companion),center=scaled.getCenter(new THREE.Vector3());
@@ -231,8 +248,8 @@ const viewer=new THREE.Group();viewer.position.set(0,0,1.05);viewer.visible=fals
 box(2.8,2.7,.06,materials.dark,0,2.4,0,viewer);
 box(2.72,.025,.025,materials.glow,0,3.72,.04,viewer);
 let viewerTitle=label('GAMEPLAY',1100,160,'#4df2e0',64);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
-const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.MeshBasicMaterial({color:'white'}));videoScreen.position.set(0,2.55,.05);viewer.add(videoScreen);
-const viewerHint=label('TRY THE SAMPLE / FULL GAME ON META QUEST',1300,100,'#ffcb73',34);viewerHint.scale.setScalar(.75);viewerHint.position.set(0,1.72,.06);viewer.add(viewerHint);
+const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.MeshBasicMaterial({color:'white',toneMapped:false}));videoScreen.position.set(0,2.55,.05);viewer.add(videoScreen);
+const viewerHint=label('SIMPLIFIED WEB SAMPLE / VIDEO SHOWS THE FULL GAME',1500,100,'#acbac9',33);viewerHint.scale.setScalar(.68);viewerHint.position.set(0,1.72,.06);viewer.add(viewerHint);
 button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
 button('SOUND',-.34,1.40,.07,()=>{video.muted=!video.muted;},viewer,.6);
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
@@ -266,6 +283,7 @@ async function openGame(id) {
   purchase.visible=false;$('#sample-result').hidden=true;
   tables.forEach((t,i)=>t.visible=['cubes','snake','pongo'][i]!==id);
   video.pause();selected=id;
+  videoScreen.scale.set(1,1,1);
   video.removeAttribute('src');video.load();video.poster=media+game.image;
   $('#detail-title').textContent=game.name;$('#detail-description').textContent=game.description;$('#detail-help').textContent=game.help;
   $('#watch-video').textContent='Watch gameplay';
@@ -292,12 +310,18 @@ async function openGame(id) {
 }
 async function toggleVideo() {
   if(!selected)return;
-  if(!video.getAttribute('src')){video.src=media+games[selected].video;video.load();}
+  if(!video.getAttribute('src')){video.src=games[selected].video;video.load();}
   if(video.paused){
     try {await video.play();videoScreen.material.map=textureVideo;videoScreen.material.needsUpdate=true;$('#watch-video').textContent='Pause gameplay';}
     catch(error){status.textContent='Playback was blocked. Select Play on the video to try again.';console.warn(error);}
   } else {video.pause();$('#watch-video').textContent='Continue gameplay';}
 }
+video.addEventListener('loadedmetadata',()=>{
+  // Letterbox mismatched aspect ratios; never stretch portrait media across
+  // a landscape surface. Current per-game edits are all aspect-safe 16:9.
+  const aspect=video.videoWidth/video.videoHeight,frame=16/9;
+  videoScreen.scale.set(aspect<frame?aspect/frame:1,aspect>frame?frame/aspect:1,1);
+});
 function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
 $('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,4.8);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
@@ -384,6 +408,7 @@ if(renderer.compileAsync){
   }finally{scene.remove(warmup);}
 }
 loading(100,'Ready to explore');
+renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
 renderer.setAnimationLoop(time=>{

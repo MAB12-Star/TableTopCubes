@@ -11,7 +11,7 @@ Standalone, buildless WebXR page at `/vr/`. The Unity game and its project setti
 - Six clear-floor teleport destinations. Either controller's select/trigger or either tracked hand's browser pinch/select uses the same targets. Tracked physical room offsets and head height are preserved; no forced camera turn. The video viewer opens in front of the current viewing position and blocks teleport targets until closed.
 - Environment geometry follows `TableTopVirtualRoom.BuildRoom`: 12m square shell, ceiling at 4.55m, twenty wall bays, half-meter floor lines and cyan trim, rendered in four instanced batches. Showroom game displays remain separate exhibits.
 - Teleport reads the rig-parented application camera, not the detached XR ArrayCamera, so repeated teleports retain the rig offset. Regression checks model a detached XR camera and repeat floor-ray selections with both input sources and a nonzero physical tracking offset.
-- No automatic video download/playback. One video at a time. No shadows, postprocessing, extra physics, or online services.
+- No automatic video download/playback. One video at a time. No post-processing or extra physics; full-game scores are read from the existing snapshot.
 
 ## Sources and dependencies
 
@@ -53,6 +53,14 @@ Samples now open at 3.8 normalized meters rather than 3.3, preserving the seated
 
 Current sample distance: 4.75 normalized meters, 25% beyond the previous 3.8m placement. Cubes Forward/Back moves the active piece through ten depth lanes with bounds and occupancy checks; cleared ten-cell lines collapse blocks above in the same lane. Snake wraps modulo ten across all four edges. Sample blocks use rounded geometry and shaded materials in five instanced batches; the Pongo paddle is rounded. Room Step Back and Welcome buttons are reduced, as is the sample's Step Back button.
 
-Graphics update: the original Penguin, White Fox and Unicorn share the pedestal at reduced scale. Each is fitted within 0.30m width and 0.36m height, retaining its original idle animation. The shared original animal atlas is now 2048px. Sample blocks have clearcoat highlights, rounded board edges, and cyan perimeter trim. A studio environment is prefiltered once at startup for material reflections; no real-time mirror or shadow passes are added.
+Graphics update: the original Penguin, White Fox and Unicorn share the pedestal at reduced scale. Each is fitted within 0.30m width and 0.36m height, retaining its original idle animation. The shared original animal atlas is now 2048px. Sample blocks have clearcoat highlights, rounded board edges, and cyan perimeter trim. A studio environment is prefiltered once at startup for material reflections; no real-time mirror passes are added (the mood-lighting update below adds one soft-shadow pass).
 
 A full-page loading screen reports asset progress, waits for the three display posters and companions, and warms all three samples' shaders before enabling Enter VR. There is no forced waiting period. GPU appearance and frame timing require physical/browser QA; automated interaction tests mock the renderer and do not validate the lighting pass.
+
+## Mood arcade and video correction
+
+Lighting is now lower-exposure with reduced studio reflections, a warm key and blue rim. One 1024px directional soft-shadow map supplies contact/depth shadows on the floor, sample decks and companion block. Physical cabinets have rounded tops/bezels, substantial bases/side cheeks, accent trim, framed buttons and marquee panels. Videos and canvas UI bypass scene tone mapping so lighting cannot wash out their colors.
+
+Each sample now uses its own 20-second, 1280x720 landscape clip, cut directly from the user's Nov22 solo source. The actual source is WhatsApp-compressed 848x478; export is upscaled, not restored native HD. All three retain source proportions with fit/pad and square pixels. Runtime metadata also fits unusual video aspect ratios without stretching. No old website media was deleted. Source cuts: Cubes 182–202s, Snake 373–393s, Pongo 548–568s. Source conversation is omitted; the user's existing Mixkit689 track supplies quiet music. All outputs were fully decoded without errors and reviewed in contact sheets.
+
+Both the desktop copy and in-world panel explicitly identify the mini games as simplified browser samples and the video as real full-game footage. Joystick movement is unchanged, as requested.

@@ -7,7 +7,7 @@
   <meta name="description" content="Step inside the TableTop Cubes showroom. Explore Cubes, Cube Snake and Pongo, meet a companion, and watch real solo and multiplayer gameplay.">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
-  <link rel="stylesheet" href="showroom.css?v=20261123-polish">
+  <link rel="stylesheet" href="showroom.css?v=20261123-mood-arcade">
 </head>
 <body>
   <section id="loading-screen" aria-labelledby="loading-title" role="status">
@@ -37,7 +37,7 @@
       <button data-game="pongo"><span class="number">03</span><span><strong>Pongo</strong><small>BOUNCE / AIM</small></span><span class="swatch pongo"></span></button>
     </nav>
     <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button></div>
-    <p class="disclaimer">Try small browser arcade samples and watch real gameplay. Full games are available on Meta Quest.</p>
+    <p class="disclaimer">Simplified browser samples. Their graphics and controls differ from the full Quest game—watch the game-specific footage to see the full experience.</p>
   </main>
   <dialog id="details" aria-labelledby="detail-title">
     <button class="close" id="close-details" aria-label="Close game details">×</button>
@@ -45,7 +45,7 @@
     <video id="game-video" controls playsinline preload="none" poster="../assets/november-2026/cubes-solo.webp" aria-label="TableTop gameplay video"></video>
     <p id="detail-help"></p>
     <div class="detail-actions"><button id="play-sample">Play mini sample</button><button id="watch-video">Watch gameplay</button><a class="store" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest</a></div>
-    <p class="video-note">Videos feature more than one game. No headset needed to watch.</p>
+    <p class="video-note">Real footage of this game. The browser sample has simplified graphics and controls; the video shows the full Quest experience.</p>
   </dialog>
   <section id="sample-result" class="sample-result" hidden aria-labelledby="sample-result-title">
     <p class="eyebrow">KEEP PLAYING THE FULL GAME</p><h2 id="sample-result-title">Sample complete</h2>
@@ -54,7 +54,7 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261123-polished-companions').catch(() => {
+    import('./showroom.bundle.js?v=20261123-mood-arcade').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
       document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
       document.querySelector('#loading-progress').hidden=true;
