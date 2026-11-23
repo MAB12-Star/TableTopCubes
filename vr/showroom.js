@@ -3,6 +3,7 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {XRHandModelFactory} from 'three/addons/webxr/XRHandModelFactory.js';
 import {createSample} from './samples.js';
+import {installScoreWalls} from './walls.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -101,6 +102,7 @@ function label(text,width=1024,height=160,color='#eafafa',size=64,bg=null) {
 }
 const roomTitle=label('TABLETOP / ARCADE',1600,180,'#e2f9f8',100);roomTitle.position.set(0,3.25,-5.84);scene.add(roomTitle);
 const roomSubtitle=label('THREE GAMES. ONE TABLE.',1400,100,'#62ddd4',42);roomSubtitle.position.set(0,2.88,-5.83);scene.add(roomSubtitle);
+const scoreWalls=installScoreWalls(scene);
 const loader=new THREE.TextureLoader();
 async function loadTexture(url) {
   if(!textures.has(url))textures.set(url,loader.loadAsync(url).then(t=>{t.colorSpace=THREE.SRGBColorSpace;return t;}));
@@ -139,7 +141,9 @@ const teleportSpots=[
   {name:'WELCOME',x:0,z:3.65},
   {name:'CUBES',x:-2.65,z:1.8},
   {name:'SNAKE',x:0,z:1.8},
-  {name:'PONGO',x:2.65,z:1.8}
+  {name:'PONGO',x:2.65,z:1.8},
+  {name:'RANKINGS',x:-4.2,z:1.8},
+  {name:'CHAMPIONS',x:4.2,z:1.8}
 ];
 const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
 const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();

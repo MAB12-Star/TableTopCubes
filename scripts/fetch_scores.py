@@ -14,10 +14,26 @@ key = os.environ["UNITY_SERVICE_KEY_ID"]
 secret = os.environ["UNITY_SERVICE_SECRET"]
 authorization = base64.b64encode(f"{key}:{secret}".encode()).decode()
 scores = {}
+def profile_icon(metadata):
+    """Keep stable in-game animal IDs; do not invent icons for older scores."""
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except (ValueError, TypeError):
+            return None
+    value = metadata.get("profileIcon") if isinstance(metadata, dict) else None
+    if isinstance(value, bool):
+        return None
+    try:
+        icon = int(value)
+        return icon if str(value) == str(icon) and 0 <= icon < 12 else None
+    except (ValueError, TypeError, OverflowError):
+        return None
+
 for game, board in boards.items():
     url = (
         "https://services.api.unity.com/leaderboards/v1/projects/"
-        f"{project}/environments/{environment}/leaderboards/{board}/scores?limit=5"
+        f"{project}/environments/{environment}/leaderboards/{board}/scores?limit=5&includeMetadata=true"
     )
     request = Request(url, headers={"Authorization": f"Basic {authorization}"})
     try:
@@ -26,7 +42,7 @@ for game, board in boards.items():
     except HTTPError as error:
         raise SystemExit(f"Unity returned HTTP {error.code} for {game}") from None
     scores[game] = [
-        {"rank": row["rank"] + 1, "name": row.get("playerName") or "Player", "points": row["score"]}
+        {"rank": row["rank"] + 1, "name": row.get("playerName") or "Player", "points": row["score"], "profileIcon": profile_icon(row.get("metadata"))}
         for row in rows
     ]
 snapshot = {"updated": datetime.now(timezone.utc).isoformat(), "scores": scores}

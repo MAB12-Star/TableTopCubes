@@ -43,3 +43,8 @@ At a sample win or game over, an in-world purchase card (and accessible desktop 
 
 Seated layout: the exhibit fits to tracked eye height (tested at 0.9m, 1.2m and 1.8m in the simulation) without altering headset tracking. Sample control rows share one plane, have separated vertical bounds, and sit below the board's front edge. Physical headset appearance remains to be checked.
 
+## Score walls
+
+Left wall: top five full-game scores for Cubes, Snake and Pongo, with original animal portraits. Right wall: current high-score leader per game, their portrait and a gold trophy composition. These are leaderboard leaders, not a claim about the last multiplayer match. New Rankings and Champions floor destinations provide closer viewing.
+
+Uses the existing public leaderboard snapshot, updated hourly by GitHub Actions. Server-side export explicitly requests score metadata and publishes only the stable profileIcon ID (0–11), rank, display name and points. No service credentials are sent to the browser. Missing old icon metadata is visibly unknown. Six cached canvas textures refresh only when data/images change; data is checked every five minutes, not every frame.
