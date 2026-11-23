@@ -111,6 +111,36 @@ for(const [i,id] of ['cubes','snake','pongo'].entries()) {
 const pedestal=box(.95,.5,.85,materials.table,0,.25,.75);
 box(.98,.025,.88,materials.glow,0,.51,.75);
 const companionLabel=label('MEET YOUR COMPANION',1000,160,'#a4e8e3',43);companionLabel.scale.setScalar(.43);companionLabel.position.set(0,.23,1.19);scene.add(companionLabel);
+// Fixed destinations stay in clear floor space, outside tables and the pedestal.
+const teleportSpots=[
+  {name:'WELCOME',x:0,z:3.65},
+  {name:'CUBES',x:-2.65,z:1.8},
+  {name:'SNAKE',x:0,z:1.8},
+  {name:'PONGO',x:2.65,z:1.8}
+];
+const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
+const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();
+let lastTeleport=-Infinity;
+function getHeadPosition(){return renderer.xr.getCamera(camera).getWorldPosition(headPosition);}
+function teleportTo(spot){
+  if(!renderer.xr.isPresenting||viewer.visible||!teleportSpots.includes(spot)||performance.now()-lastTeleport<400)return false;
+  const head=getHeadPosition();
+  // Subtract the tracked room offset: the user's head lands at the marker,
+  // including after walking physically away from the tracking-space origin.
+  rig.position.x+=spot.x-head.x;rig.position.z+=spot.z-head.z;
+  rig.updateMatrixWorld(true);lastTeleport=performance.now();
+  pointers.forEach(p=>p.dot.visible=false);
+  return true;
+}
+for(const spot of teleportSpots){
+  const pad=new THREE.Group();pad.position.set(spot.x,.018,spot.z);teleportGroup.add(pad);spot.pad=pad;
+  const disk=new THREE.Mesh(new THREE.CircleGeometry(.46,32),new THREE.MeshBasicMaterial({color:'#3ad4d0',transparent:true,opacity:.14,side:THREE.DoubleSide,depthWrite:false}));
+  disk.rotation.x=-Math.PI/2;disk.userData.teleport=true;interact(disk,()=>teleportTo(spot),pad);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.36,.40,32),new THREE.MeshBasicMaterial({color:'#73efe1',side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.003;pad.add(ring);
+  const name=label(spot.name,800,140,'#e0fffa',100);name.rotation.x=-Math.PI/2;name.scale.setScalar(.38);name.position.y=.006;pad.add(name);
+}
+const teleportHelp=label('MOVE: POINT AT A FLOOR RING / PINCH OR TRIGGER',1800,100,'#a6d6db',44);
+teleportHelp.position.set(0,2.58,-4.06);teleportGroup.add(teleportHelp);
 try {
   const [gltf,atlas]=await Promise.all([new GLTFLoader().loadAsync('assets/penguin.glb'),loadTexture('assets/animal-atlas.webp')]);
   // Export kept the source FBX UVs verbatim without a baked glTF texture.
@@ -150,6 +180,12 @@ async function openGame(id) {
   viewer.remove(viewerTitle);viewerTitle.geometry.dispose();viewerTitle.material.map.dispose();viewerTitle.material.dispose();
   viewerTitle=label(game.name.toUpperCase(),1100,160,game.color,70);viewerTitle.position.set(0,2.99,.045);viewer.add(viewerTitle);
   viewer.visible=renderer.xr.isPresenting;
+  if(viewer.visible){
+    const head=getHeadPosition();renderer.xr.getCamera(camera).getWorldDirection(headForward);headForward.y=0;
+    if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
+    viewer.position.set(head.x+headForward.x*2.6,0,head.z+headForward.z*2.6);
+    viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
+  }
   viewPoster=await loadTexture(media+game.image).catch(()=>null);
   if(selected!==id)return;
   videoScreen.material.map=viewPoster;videoScreen.material.needsUpdate=true;
@@ -206,12 +242,14 @@ let desktopPose;
 renderer.xr.addEventListener('sessionstart',()=>{
   desktopPose={position:camera.position.clone(),quaternion:camera.quaternion.clone()};
   controls.enabled=false;camera.position.set(0,0,0);camera.quaternion.identity();rig.position.set(0,0,3.65);
+  teleportGroup.visible=true;lastTeleport=-Infinity;
   document.body.classList.add('xr-active');if(dialog.open)dialog.close();closeGame();
   enterVR.textContent='Exit VR';
 });
 renderer.xr.addEventListener('sessionend',()=>{
   rig.position.set(0,0,0);if(desktopPose){camera.position.copy(desktopPose.position);camera.quaternion.copy(desktopPose.quaternion);}
   controls.enabled=true;controls.update();document.body.classList.remove('xr-active');closeGame();
+  teleportGroup.visible=false;
   pointers.forEach(p=>p.dot.visible=false);enterVR.textContent='Enter VR';
 });
 enterVR.addEventListener('click',async()=>{
@@ -236,14 +274,18 @@ renderer.setAnimationLoop(time=>{
   if(!document.hidden){
     if(!paused)mixer?.update(delta);
     if(!renderer.xr.isPresenting)controls.update();
-    else for(let i=0;i<controllers.length;i++) {
-      castController(controllers[i]);const hit=hits()[0],p=pointers[i];
-      p.dot.visible=!!hit&&controllers[i].visible;
-      p.line.scale.z=hit?hit.distance:4;
-      if(hit)p.dot.position.copy(hit.point);
+    else {
+      const head=getHeadPosition();
+      for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
+      for(let i=0;i<controllers.length;i++) {
+        castController(controllers[i]);const hit=hits()[0],p=pointers[i];
+        p.dot.visible=!!hit&&controllers[i].visible;
+        p.line.scale.z=hit?hit.distance:4;
+        if(hit)p.dot.position.copy(hit.point);
+      }
     }
     renderer.render(scene,camera);
   }
 });
 // Development/device checks can inspect cost without logging every frame.
-window.tabletopShowroom={renderer,scene,games,openGame,closeGame,get selected(){return selected;}};
+window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,get selected(){return selected;}};
