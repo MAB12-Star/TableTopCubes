@@ -15,7 +15,7 @@ export function createSample(id,parent,{box,label,button,targets}){
   let caption,captionText='',score=0,running=false,ended=false,timer=0;
   function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.55);caption.position.set(0,1.12,2.02);root.add(caption);}
   function ctl(text,x,z,fn,width=.55){const b=button(text,x,.86,z,fn,root,width);b.name=text;return b;}
-  function draw(points){counts.fill(0);for(const p of points){const c=p.c||0;cellTransform.position.set((p.x-4.5)*.17,.85+(p.y||0)*.11,1.04+(p.z-4.5)*.17);cellTransform.updateMatrix();cells[c].setMatrixAt(counts[c]++,cellTransform.matrix);}cells.forEach((m,i)=>{m.count=counts[i];m.instanceMatrix.needsUpdate=true;});}
+  function draw(points){counts.fill(0);for(const p of points){const c=p.c||0;cellTransform.position.set((p.x-4.5)*.17,.85+(p.y||0)*.15,1.04+(p.z-4.5)*.17);cellTransform.updateMatrix();cells[c].setMatrixAt(counts[c]++,cellTransform.matrix);}cells.forEach((m,i)=>{m.count=counts[i];m.instanceMatrix.needsUpdate=true;});}
   let update=()=>{},reset=()=>{};
   if(id==='cubes'){
     let settled=[],piece,x=4,y=10;
