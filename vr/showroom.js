@@ -32,11 +32,10 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const rotation = new THREE.Matrix4();
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#07131d');
-scene.fog = new THREE.Fog('#07131d',10,24);
+scene.background = new THREE.Color('#060c13');
 const camera = new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.05,50);
 const rig = new THREE.Group(); scene.add(rig); rig.add(camera);
-camera.position.set(4,3.2,7);
+camera.position.set(3,2.8,5.1);
 const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.setSize(innerWidth,innerHeight);
@@ -62,12 +61,32 @@ const materials = {
 function box(w,h,d,mat,x=0,y=0,z=0,parent=scene) {
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);parent.add(mesh);return mesh;
 }
-box(20,.1,20,materials.floor,0,-.05,0);
-box(12,5,.15,materials.wall,0,2.5,-4.2);
-for (const x of [-5.9,5.9]) box(.15,5,12,materials.wall,x,2.5,0);
-const floorGrid=new THREE.GridHelper(18,36,'#2b6c7a','#153442');floorGrid.position.y=.005;scene.add(floorGrid);
-box(11,.025,.025,materials.glow,0,1.05,-4.1);
-box(11,.025,.025,materials.glow,0,3.8,-4.1);
+// Port of TableTopVirtualRoom.BuildRoom: same 12m shell, ceiling, wall bays,
+// half-meter floor grid, and trim. Four batches rather than separate objects.
+const roomBoxes={shell:[],panels:[],grid:[],lights:[]};
+const addRoomBox=(kind,x,y,z,w,h,d)=>roomBoxes[kind].push({x,y,z,w,h,d});
+addRoomBox('shell',0,-.05,0,12,.1,12);
+addRoomBox('shell',0,4.55,0,12,.1,12);
+for(const side of [-1,1]){
+  const edge=side*6,inner=side*5.91;
+  addRoomBox('shell',edge,2.25,0,.1,4.5,12);addRoomBox('shell',0,2.25,edge,12,4.5,.1);
+  addRoomBox('lights',inner,3.45,0,.025,.024,11.8);addRoomBox('lights',0,3.45,inner,11.8,.024,.025);
+  for(let slot=-4;slot<=4;slot+=2){
+    addRoomBox('panels',inner,1.8,slot,.08,2.5,1.8);addRoomBox('panels',slot,1.8,inner,1.8,2.5,.08);
+    addRoomBox('grid',inner*.99,.67,slot,.025,.035,1.56);addRoomBox('grid',slot,.67,inner*.99,1.56,.035,.025);
+  }
+}
+for(let line=-11;line<=11;line++){
+  addRoomBox('grid',line*.5,.003,0,.012,.006,11.8);addRoomBox('grid',0,.003,line*.5,11.8,.006,.012);
+}
+const roomColors={shell:[.025,.047,.075],panels:[.047,.085,.125],grid:[.09,.23,.27],lights:[.14,.55,.55]};
+const unitBox=new THREE.BoxGeometry(1,1,1),instanceTransform=new THREE.Object3D();
+for(const [kind,boxes] of Object.entries(roomBoxes)){
+  const color=new THREE.Color().setRGB(...roomColors[kind],THREE.SRGBColorSpace);
+  const batch=new THREE.InstancedMesh(unitBox,new THREE.MeshBasicMaterial({color,toneMapped:false}),boxes.length);batch.name=`Game room / ${kind}`;
+  boxes.forEach((b,i)=>{instanceTransform.position.set(b.x,b.y,b.z);instanceTransform.scale.set(b.w,b.h,b.d);instanceTransform.updateMatrix();batch.setMatrixAt(i,instanceTransform.matrix);});
+  batch.computeBoundingSphere();scene.add(batch);
+}
 function label(text,width=1024,height=160,color='#eafafa',size=64,bg=null) {
   const c=document.createElement('canvas');c.width=width;c.height=height;
   const ctx=c.getContext('2d');
@@ -77,8 +96,8 @@ function label(text,width=1024,height=160,color='#eafafa',size=64,bg=null) {
   const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
   return new THREE.Mesh(new THREE.PlaneGeometry(width/400,height/400),new THREE.MeshBasicMaterial({map:texture,transparent:!bg,depthWrite:!!bg}));
 }
-const roomTitle=label('TABLETOP / ARCADE',1600,180,'#e2f9f8',100);roomTitle.position.set(0,3.25,-4.08);scene.add(roomTitle);
-const roomSubtitle=label('THREE GAMES. ONE TABLE.',1400,100,'#62ddd4',42);roomSubtitle.position.set(0,2.88,-4.07);scene.add(roomSubtitle);
+const roomTitle=label('TABLETOP / ARCADE',1600,180,'#e2f9f8',100);roomTitle.position.set(0,3.25,-5.84);scene.add(roomTitle);
+const roomSubtitle=label('THREE GAMES. ONE TABLE.',1400,100,'#62ddd4',42);roomSubtitle.position.set(0,2.88,-5.83);scene.add(roomSubtitle);
 const loader=new THREE.TextureLoader();
 async function loadTexture(url) {
   if(!textures.has(url))textures.set(url,loader.loadAsync(url).then(t=>{t.colorSpace=THREE.SRGBColorSpace;return t;}));
@@ -121,7 +140,10 @@ const teleportSpots=[
 const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
 const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();
 let lastTeleport=-Infinity;
-function getHeadPosition(){return renderer.xr.getCamera(camera).getWorldPosition(headPosition);}
+// The application's camera is parented to the rig and receives the tracked pose
+// from WebXRManager. getWorldPosition on the detached ArrayCamera overwrites its
+// composed matrixWorld with a local pose, losing the rig offset after teleport.
+function getHeadPosition(){return camera.getWorldPosition(headPosition);}
 function teleportTo(spot){
   if(!renderer.xr.isPresenting||viewer.visible||!teleportSpots.includes(spot)||performance.now()-lastTeleport<400)return false;
   const head=getHeadPosition();
@@ -140,7 +162,7 @@ for(const spot of teleportSpots){
   const name=label(spot.name,800,140,'#e0fffa',100);name.rotation.x=-Math.PI/2;name.scale.setScalar(.38);name.position.y=.006;pad.add(name);
 }
 const teleportHelp=label('MOVE: POINT AT A FLOOR RING / PINCH OR TRIGGER',1800,100,'#a6d6db',44);
-teleportHelp.position.set(0,2.58,-4.06);teleportGroup.add(teleportHelp);
+teleportHelp.position.set(0,2.58,-5.82);teleportGroup.add(teleportHelp);
 try {
   const [gltf,atlas]=await Promise.all([new GLTFLoader().loadAsync('assets/penguin.glb'),loadTexture('assets/animal-atlas.webp')]);
   // Export kept the source FBX UVs verbatim without a baked glTF texture.
@@ -181,7 +203,7 @@ async function openGame(id) {
   viewerTitle=label(game.name.toUpperCase(),1100,160,game.color,70);viewerTitle.position.set(0,2.99,.045);viewer.add(viewerTitle);
   viewer.visible=renderer.xr.isPresenting;
   if(viewer.visible){
-    const head=getHeadPosition();renderer.xr.getCamera(camera).getWorldDirection(headForward);headForward.y=0;
+    const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
     viewer.position.set(head.x+headForward.x*2.6,0,head.z+headForward.z*2.6);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
@@ -205,7 +227,7 @@ $('#close-details').addEventListener('click',closeGame);
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGame();});
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeGame();}});
 document.querySelectorAll('[data-game]').forEach(b=>b.addEventListener('click',()=>openGame(b.dataset.game)));
-function resetView(){if(renderer.xr.isPresenting)return;camera.position.set(4,3.2,7);controls.target.set(0,1,-.7);controls.update();}
+function resetView(){if(renderer.xr.isPresenting)return;camera.position.set(3,2.8,5.1);controls.target.set(0,1,-.7);controls.update();}
 $('#reset-view').addEventListener('click',resetView);
 function motionUI() {$('#motion').textContent=paused?'Resume animation':'Pause animation';$('#motion').setAttribute('aria-pressed',String(paused));}
 motionUI();$('#motion').addEventListener('click',()=>{paused=!paused;motionUI();});
@@ -273,7 +295,12 @@ renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
     if(!paused)mixer?.update(delta);
-    if(!renderer.xr.isPresenting)controls.update();
+    if(!renderer.xr.isPresenting){
+      controls.update();
+      camera.position.x=THREE.MathUtils.clamp(camera.position.x,-5.65,5.65);
+      camera.position.z=THREE.MathUtils.clamp(camera.position.z,-5.65,5.65);
+      camera.position.y=THREE.MathUtils.clamp(camera.position.y,.3,4.3);
+    }
     else {
       const head=getHeadPosition();
       for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;

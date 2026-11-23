@@ -9,6 +9,8 @@ Standalone, buildless WebXR page at `/vr/`. The Unity game and its project setti
 - Desktop/touch orbit preview, accessible HTML game buttons, reduced-motion support, and a regular website fallback.
 - WebXR controller ray selection for either input source, hit dots, and optional browser hand tracking/pinch selection. In-world video Play/Pause, Sound, Close, and Meta Store buttons.
 - Four clear-floor teleport destinations. Either controller's select/trigger or either tracked hand's browser pinch/select uses the same targets. Tracked physical room offsets and head height are preserved; no forced camera turn. The video viewer opens in front of the current viewing position and blocks teleport targets until closed.
+- Environment geometry follows `TableTopVirtualRoom.BuildRoom`: 12m square shell, ceiling at 4.55m, twenty wall bays, half-meter floor lines and cyan trim, rendered in four instanced batches. Showroom game displays remain separate exhibits.
+- Teleport reads the rig-parented application camera, not the detached XR ArrayCamera, so repeated teleports retain the rig offset. Regression checks model a detached XR camera and repeat floor-ray selections with both input sources and a nonzero physical tracking offset.
 - No automatic video download/playback. One video at a time. No shadows, postprocessing, extra physics, or online services.
 
 ## Sources and dependencies
