@@ -40,3 +40,6 @@ Selecting a display's PLAY circle hides that exhibit and opens its video panel p
 Only one sample runs at once. Sample cells use five instanced batches; targets, generated text textures, mesh buffers and materials are released when closing or switching. No network gameplay or Unity services are used. These are simplified browser samples, not full ports of the Unity games or their gesture recognizers.
 
 At a sample win or game over, an in-world purchase card (and accessible desktop card) offers Meta Store, itch.io, Play Again, and Back to Room. Store buttons explicitly exit an active XR session before navigating. End detection is one-shot per round and is reset on replay.
+
+Seated layout: the exhibit fits to tracked eye height (tested at 0.9m, 1.2m and 1.8m in the simulation) without altering headset tracking. Sample control rows share one plane, have separated vertical bounds, and sit below the board's front edge. Physical headset appearance remains to be checked.
+

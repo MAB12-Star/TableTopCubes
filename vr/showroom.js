@@ -236,10 +236,14 @@ async function openGame(id) {
   if(renderer.xr.isPresenting){
     const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
-    viewer.position.set(head.x+headForward.x*3.3,0,head.z+headForward.z*3.3);
+    // Fit the whole exhibit to the tracked eye height, seated or standing,
+    // without changing the headset camera or its physical tracking origin.
+    const fit=THREE.MathUtils.clamp(head.y/1.65,.45,1.2);
+    viewer.scale.setScalar(fit);
+    viewer.position.set(head.x+headForward.x*3.3*fit,head.y-1.65*fit,head.z+headForward.z*3.3*fit);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
   }else{
-    viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
+    viewer.scale.setScalar(1);viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
   }
   viewPoster=await loadTexture(media+game.image).catch(()=>null);
   if(selected!==id)return;

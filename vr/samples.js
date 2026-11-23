@@ -13,8 +13,10 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   box(1.85,.06,1.85,new THREE.MeshStandardMaterial({color:0x0c2533}),0,.72,1.04,root);
   const grid=new THREE.GridHelper(1.76,10,0x4ce8d4,0x245160);grid.position.set(0,.755,1.04);root.add(grid);
   let caption,captionText='',score=0,running=false,ended=false,timer=0,notified=false;
-  function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.55);caption.position.set(0,1.12,2.02);root.add(caption);if(!notified&&/^(GAME OVER|YOU WIN)/.test(text)){notified=true;onEnd?.({won:text.startsWith('YOU WIN'),score,game:id});}}
-  function ctl(text,x,z,fn,width=.55){const b=button(text,x,.86,z,fn,root,width);b.name=text;return b;}
+  function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.48);caption.position.set(0,.84,2.15);root.add(caption);if(!notified&&/^(GAME OVER|YOU WIN)/.test(text)){notified=true;onEnd?.({won:text.startsWith('YOU WIN'),score,game:id});}}
+  // Coplanar rows cannot hide one another. Shorter buttons sit below the board
+  // instead of the old near row filling the user's view and obscuring row one.
+  function ctl(text,x,row,fn,width=.55){const b=button(text,x,row<2.4?.52:.22,2.15,fn,root,width);b.scale.y=.5;b.name=text;return b;}
   function draw(points){counts.fill(0);for(const p of points){const c=p.c||0;cellTransform.position.set((p.x-4.5)*.17,.85+(p.y||0)*.15,1.04+(p.z-4.5)*.17);cellTransform.updateMatrix();cells[c].setMatrixAt(counts[c]++,cellTransform.matrix);}cells.forEach((m,i)=>{m.count=counts[i];m.instanceMatrix.needsUpdate=true;});}
   let update=()=>{},reset=()=>{};
   if(id==='cubes'){
