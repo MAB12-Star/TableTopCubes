@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Small browser-native arcade samples, independent of the Unity game rules.
-export function createSample(id,parent,{box,label,button,targets}){
+export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart}){
   const root=new THREE.Group();root.name=`Playable ${id} sample`;parent.add(root);
   const ownedTargets=[],geometries=new Set(),materials=new Set();
   const startIndex=targets.length;
@@ -12,8 +12,8 @@ export function createSample(id,parent,{box,label,button,targets}){
   const cellTransform=new THREE.Object3D(),counts=[0,0,0,0,0];
   box(1.85,.06,1.85,new THREE.MeshStandardMaterial({color:0x0c2533}),0,.72,1.04,root);
   const grid=new THREE.GridHelper(1.76,10,0x4ce8d4,0x245160);grid.position.set(0,.755,1.04);root.add(grid);
-  let caption,captionText='',score=0,running=false,ended=false,timer=0;
-  function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.55);caption.position.set(0,1.12,2.02);root.add(caption);}
+  let caption,captionText='',score=0,running=false,ended=false,timer=0,notified=false;
+  function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.55);caption.position.set(0,1.12,2.02);root.add(caption);if(!notified&&/^(GAME OVER|YOU WIN)/.test(text)){notified=true;onEnd?.({won:text.startsWith('YOU WIN'),score,game:id});}}
   function ctl(text,x,z,fn,width=.55){const b=button(text,x,.86,z,fn,root,width);b.name=text;return b;}
   function draw(points){counts.fill(0);for(const p of points){const c=p.c||0;cellTransform.position.set((p.x-4.5)*.17,.85+(p.y||0)*.15,1.04+(p.z-4.5)*.17);cellTransform.updateMatrix();cells[c].setMatrixAt(counts[c]++,cellTransform.matrix);}cells.forEach((m,i)=>{m.count=counts[i];m.instanceMatrix.needsUpdate=true;});}
   let update=()=>{},reset=()=>{};
@@ -54,6 +54,7 @@ export function createSample(id,parent,{box,label,button,targets}){
     update=dt=>{paddle.position.x=px;if(running){bx+=vx*dt;bz+=vz*dt;if(Math.abs(bx)>.76){bx=Math.sign(bx)*.76;vx=-vx;}if(bz<-.73){bz=-.73;vz=Math.abs(vz);if(Math.abs(bx-target.position.x)<.24){score+=10;hits++;target.position.x=[-.48,0,.48][hits%3];say(`PONGO / +10 / ${score} OF 50`);if(score>=50){running=false;say('YOU WIN / 50 POINTS / PLAY AGAIN');}}}if(vz>0&&bz>.58&&bz<.79&&Math.abs(bx-px)<.32){bz=.58;vz=-Math.abs(vz);vx=(bx-px)*2.2;}if(bz>.9){lives--;if(!lives){running=false;say('GAME OVER / SELECT START TO RETRY');}else{bx=0;bz=0;vz=.7;say(`PONGO / ${lives} LIVES / ${score} POINTS`);}}}ball.position.set(bx,.94,1.04+bz);};
     say('PONGO / SELECT START / HIT THE TARGET');update(0);
   }
+  const begin=reset;reset=()=>{notified=false;begin();onRestart?.();};
   ownedTargets.push(...targets.slice(startIndex));
   return {root,update,reset,get score(){return score;},dispose(){for(const t of ownedTargets){const i=targets.indexOf(t);if(i>=0)targets.splice(i,1);}root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geometries.add(o.geometry);for(const m of [].concat(o.material||[]))materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose();});parent.remove(root);}};
 }

@@ -7,6 +7,7 @@ import {createSample} from './samples.js';
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
 const storeURL = 'https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/';
+const itchURL = 'https://mab12-star.itch.io/tabletop-cubes';
 const games = {
   cubes: {name:'Cubes',tag:'STACK / CLEAR',color:'#b28bff',image:'cubes-solo.webp',
     description:'Find the fit. Turn colorful pieces, fill lines, and build your next personal best.',
@@ -197,9 +198,32 @@ button('SOUND',-.34,1.40,.07,()=>{video.muted=!video.muted;},viewer,.6);
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
 button('GET GAME',1.02,1.40,.07,async()=>{await renderer.xr.getSession()?.end();location.href=storeURL;},viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;
+const purchase=new THREE.Group();purchase.position.z=1.55;purchase.visible=false;viewer.add(purchase);
+box(2.5,2.0,.06,materials.dark,0,1.75,0,purchase);
+const purchaseHeading=label('KEEP PLAYING THE FULL GAME',1200,150,'#4df2e0',54);purchaseHeading.scale.setScalar(.75);purchaseHeading.position.set(0,2.48,.05);purchase.add(purchaseHeading);
+let purchaseScore;
+button('META STORE',-.59,1.91,.07,()=>visitStore(storeURL),purchase,1.05);
+button('ITCH.IO',.59,1.91,.07,()=>visitStore(itchURL),purchase,1.05);
+button('PLAY AGAIN',-.59,1.40,.07,()=>sample?.reset(),purchase,1.05);
+button('BACK TO ROOM',.59,1.40,.07,closeGame,purchase,1.05);
+async function visitStore(url){video.pause();const session=renderer.xr.getSession();if(session)await session.end();location.href=url;}
+function endSample(result){
+  sample.root.visible=false;purchase.visible=true;
+  if(purchaseScore){purchase.remove(purchaseScore);purchaseScore.geometry.dispose();purchaseScore.material.map.dispose();purchaseScore.material.dispose();}
+  const text=`${result.won?'YOU WIN':'SAMPLE OVER'} / ${result.score} POINTS`;
+  purchaseScore=label(text,1100,120,'#ffc25b',50);purchaseScore.scale.setScalar(.75);purchaseScore.position.set(0,2.22,.05);purchase.add(purchaseScore);
+  $('#sample-result-title').textContent=text;$('#sample-result').hidden=false;
+  if(!renderer.xr.isPresenting)$('#buy-meta').focus();
+}
+function resumeSample(){purchase.visible=false;$('#sample-result').hidden=true;if(sample)sample.root.visible=true;}
+$('#buy-meta').addEventListener('click',()=>visitStore(storeURL));
+$('#buy-itch').addEventListener('click',()=>visitStore(itchURL));
+$('#sample-again').addEventListener('click',()=>sample?.reset());
+$('#sample-back').addEventListener('click',closeGame);
 async function openGame(id) {
   const game=games[id];if(!game)return;
   sample?.dispose();sample=null;
+  purchase.visible=false;$('#sample-result').hidden=true;
   tables.forEach((t,i)=>t.visible=['cubes','snake','pongo'][i]!==id);
   video.pause();selected=id;
   video.removeAttribute('src');video.load();video.poster=media+game.image;
@@ -208,7 +232,7 @@ async function openGame(id) {
   viewer.remove(viewerTitle);viewerTitle.geometry.dispose();viewerTitle.material.map.dispose();viewerTitle.material.dispose();
   viewerTitle=label('TABLETOP / '+game.name.toUpperCase(),1100,160,'#4df2e0',60);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
   viewer.visible=true;
-  sample=createSample(id,viewer,{box,label,button,targets});
+  sample=createSample(id,viewer,{box,label,button,targets,onEnd:endSample,onRestart:resumeSample});
   if(renderer.xr.isPresenting){
     const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -230,7 +254,7 @@ async function toggleVideo() {
     catch(error){status.textContent='Playback was blocked. Select Play on the video to try again.';console.warn(error);}
   } else {video.pause();$('#watch-video').textContent='Continue gameplay';}
 }
-function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
 $('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,3.0);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
@@ -247,7 +271,7 @@ canvas.addEventListener('pointermove',e=>{if(dialog.open)return;pointer.set(e.cl
 const activeTargets=[], hitResults=[];
 function hits() {
   activeTargets.length=0;hitResults.length=0;
-  for(const t of targets){let p=t,visible=true,inViewer=false;while(p){if(p===viewer)inViewer=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer))activeTargets.push(t);}
+  for(const t of targets){let p=t,visible=true,inViewer=false,inPurchase=false;while(p){if(p===viewer)inViewer=true;if(p===purchase)inPurchase=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer)&&(!purchase.visible||inPurchase))activeTargets.push(t);}
   return raycaster.intersectObjects(activeTargets,false,hitResults);
 }
 canvas.addEventListener('pointerup',e=>{

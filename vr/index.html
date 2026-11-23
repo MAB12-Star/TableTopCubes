@@ -7,7 +7,7 @@
   <meta name="description" content="Step inside the TableTop Cubes showroom. Explore Cubes, Cube Snake and Pongo, meet a companion, and watch real solo and multiplayer gameplay.">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
-  <link rel="stylesheet" href="showroom.css?v=20261123-samples">
+  <link rel="stylesheet" href="showroom.css?v=20261123-sample-stores">
 </head>
 <body>
   <a class="skip" href="#games">Skip to game displays</a>
@@ -40,9 +40,14 @@
     <div class="detail-actions"><button id="play-sample">Play mini sample</button><button id="watch-video">Watch gameplay</button><a class="store" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest</a></div>
     <p class="video-note">Videos feature more than one game. No headset needed to watch.</p>
   </dialog>
+  <section id="sample-result" class="sample-result" hidden aria-labelledby="sample-result-title">
+    <p class="eyebrow">KEEP PLAYING THE FULL GAME</p><h2 id="sample-result-title">Sample complete</h2>
+    <p>Get TableTop Cubes on Meta Quest or itch.io.</p>
+    <div class="detail-actions"><button id="buy-meta">Meta Store</button><button id="buy-itch">itch.io</button><button id="sample-again">Play Again</button><button id="sample-back">Back to Room</button></div>
+  </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261123-playable-samples').catch(() => {
+    import('./showroom.bundle.js?v=20261123-sample-stores').catch(() => {
       document.querySelector('#status').innerHTML='The 3D room could not load. <a href="../#latest-media">Watch gameplay on the website</a>.';
       document.querySelector('#enter-vr').textContent='3D unavailable';
     });

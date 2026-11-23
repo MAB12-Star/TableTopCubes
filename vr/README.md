@@ -38,3 +38,5 @@ Selecting a display's PLAY circle hides that exhibit and opens its video panel p
 - Pongo: point at the board to position the paddle, bounce at a moving target, three lives and a 50-point goal. Left/right buttons are also available.
 
 Only one sample runs at once. Sample cells use five instanced batches; targets, generated text textures, mesh buffers and materials are released when closing or switching. No network gameplay or Unity services are used. These are simplified browser samples, not full ports of the Unity games or their gesture recognizers.
+
+At a sample win or game over, an in-world purchase card (and accessible desktop card) offers Meta Store, itch.io, Play Again, and Back to Room. Store buttons explicitly exit an active XR session before navigating. End detection is one-shot per round and is reset on replay.
