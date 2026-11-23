@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 const titles={cubes:'CUBES',snake:'CUBE SNAKE',pongo:'PONGO'};
 const endpoint='https://raw.githubusercontent.com/MAB12-Star/TableTopCubes/leaderboard-data/leaderboard.json';
 const animals=['Penguin','Crocodile','White Fox','Tiger','Unicorn','Hedgehog','Elephant','Giraffe','Raccoon','Gorilla','White Bear','Rhino'];
@@ -12,12 +13,28 @@ export function normalizeScores(snapshot){
 }
 export function installScoreWalls(scene){
   const panels=[];
+  const bezelGeometry=new RoundedBoxGeometry(2.37,3.09,.12,2,.045);
+  const bezelMaterial=new THREE.MeshStandardMaterial({color:'#0b1924',metalness:.48,roughness:.46});
+  const colors={cubes:'#b28bff',snake:'#53e6ac',pongo:'#ffc25b'};
+  const rails=new THREE.BoxGeometry(1,1,1);
   for(const side of [-1,1])for(const [i,id] of Object.keys(titles).entries()){
     const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1200;
     const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
     const mesh=new THREE.Mesh(new THREE.PlaneGeometry(2.15,2.87),new THREE.MeshBasicMaterial({map:texture,toneMapped:false}));
     mesh.name=`${side<0?'Leaderboard':'Champion'} / ${id}`;
-    mesh.position.set(side*5.80,2.12,(i-1)*2.65);mesh.rotation.y=-side*Math.PI/2;scene.add(mesh);
+    const frame=new THREE.Group();frame.name=`Neon wall frame / ${side} / ${id}`;
+    frame.position.set(side*5.80,2.12,(i-1)*2.65);frame.rotation.y=-side*Math.PI/2;scene.add(frame);
+    const bezel=new THREE.Mesh(bezelGeometry,bezelMaterial);bezel.position.z=-.035;frame.add(bezel);
+    mesh.position.set(0,0,.045);frame.add(mesh);
+    const neon=new THREE.MeshBasicMaterial({color:colors[id],toneMapped:false});
+    const halo=new THREE.MeshBasicMaterial({color:colors[id],transparent:true,opacity:.13,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
+    const neonBatch=new THREE.InstancedMesh(rails,neon,4),haloBatch=new THREE.InstancedMesh(rails,halo,4);frame.add(neonBatch,haloBatch);
+    const transform=new THREE.Object3D();
+    [[-1.13,0,.018,2.96],[1.13,0,.018,2.96],[0,1.48,2.26,.018],[0,-1.48,2.26,.018]].forEach(([x,y,w,h],i)=>{
+      transform.position.set(x,y,.075);transform.scale.set(w,h,.014);transform.updateMatrix();neonBatch.setMatrixAt(i,transform.matrix);
+      transform.position.z=.071;transform.scale.set(w<.1?.065:w,h<.1?.065:h,.009);transform.updateMatrix();haloBatch.setMatrixAt(i,transform.matrix);
+    });
+    neonBatch.computeBoundingSphere();haloBatch.computeBoundingSphere();
     panels.push({side,id,canvas,texture});
   }
   const image=new Image();let atlasReady=false,data=null,failed=false,updated='';

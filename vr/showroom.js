@@ -164,9 +164,16 @@ for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const playText=label('PLAY',400,120,'#06131d',64);playText.scale.setScalar(.32);playText.position.set(0,1.02,.72);table.add(playText);
 }
 // A real imported KUBIKOS model, converted to GLB; original UVs and idle keys retained.
-const pedestal=box(.95,.5,.85,materials.table,0,.25,.75);
-box(.98,.025,.88,materials.glow,0,.51,.75);
-const companionLabel=label('MEET YOUR COMPANION',1000,160,'#a4e8e3',43);companionLabel.scale.setScalar(.43);companionLabel.position.set(0,.23,1.19);scene.add(companionLabel);
+const pedestal=box(.95,.46,.85,materials.dark,0,.25,.75);pedestal.name='Companion arcade pedestal';pedestal.castShadow=true;
+pedestal.geometry.dispose();pedestal.geometry=new RoundedBoxGeometry(.95,.46,.85,2,.045);
+const displayTop=box(1.02,.055,.90,materials.table,0,.4975,.75);displayTop.geometry.dispose();displayTop.geometry=new RoundedBoxGeometry(1.02,.055,.90,2,.025);displayTop.castShadow=true;
+box(1.01,.065,.91,materials.dark,0,.0325,.75);
+const pedestalNeon=new THREE.MeshBasicMaterial({color:'#55d6ce',toneMapped:false});
+for(const x of [-.48,.48])box(.014,.012,.82,pedestalNeon,x,.525,.75);
+for(const z of [.34,1.16])box(.96,.012,.014,pedestalNeon,0,.525,z);
+for(const x of [-.435,.435])box(.012,.32,.012,pedestalNeon,x,.25,1.182);
+for(let slot=0;slot<5;slot++)box(.032,.14,.018,materials.table,(slot-2)*.09,.19,1.185);
+const companionLabel=label('COMPANION CLUB',1000,160,'#a4e8e3',52,'#08131d');companionLabel.scale.setScalar(.31);companionLabel.position.set(0,.37,1.187);scene.add(companionLabel);
 // Fixed destinations stay in clear floor space, outside tables and the pedestal.
 const teleportSpots=[
   {name:'WELCOME',x:0,z:3.65},
