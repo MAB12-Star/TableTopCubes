@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07131d">
+  <title>The VR Arcade | TableTop Cubes</title>
+  <meta name="description" content="Step inside the TableTop Cubes showroom. Explore Cubes, Cube Snake and Pongo, meet a companion, and watch real solo and multiplayer gameplay.">
+  <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
+  <link rel="icon" href="../assets/refresh/icon.png">
+  <link rel="stylesheet" href="showroom.css">
+</head>
+<body>
+  <a class="skip" href="#games">Skip to game displays</a>
+  <canvas id="room" aria-label="Interactive 3D arcade showroom. Use the game buttons below for an accessible alternative."></canvas>
+  <header class="topbar">
+    <a class="brand" href="../"><img src="../assets/refresh/icon.png" width="36" height="36" alt="">TABLETOP <span>CUBES</span></a>
+    <a class="back" href="../">Back to website</a>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <p class="eyebrow">STEP INSIDE THE ARCADE</p>
+      <h1 id="title">Small table.<br><em>Big possibilities.</em></h1>
+      <p>Meet your next favorite game. Explore the room, watch real gameplay, and say hello to a familiar companion.</p>
+      <div id="xr-entry"><button id="enter-vr" disabled>Checking VR support…</button></div>
+      <p id="status" role="status">Preparing the showroom…</p>
+    </section>
+    <nav class="game-dock" id="games" aria-label="Explore a game">
+      <button data-game="cubes"><span class="number">01</span><span><strong>Cubes</strong><small>STACK / CLEAR</small></span><span class="swatch cubes"></span></button>
+      <button data-game="snake"><span class="number">02</span><span><strong>Cube Snake</strong><small>EAT / GROW</small></span><span class="swatch snake"></span></button>
+      <button data-game="pongo"><span class="number">03</span><span><strong>Pongo</strong><small>BOUNCE / AIM</small></span><span class="swatch pongo"></span></button>
+    </nav>
+    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button></div>
+    <p class="disclaimer">A VR showroom featuring real gameplay videos. Full games are available on Meta Quest.</p>
+  </main>
+  <dialog id="details" aria-labelledby="detail-title">
+    <button class="close" id="close-details" aria-label="Close game details">×</button>
+    <div class="detail-copy"><p class="eyebrow">SOLO + TWO PLAYER</p><h2 id="detail-title">Cubes</h2><p id="detail-description"></p></div>
+    <video id="game-video" controls playsinline preload="none" poster="../assets/november-2026/cubes-solo.webp" aria-label="TableTop gameplay video"></video>
+    <p id="detail-help"></p>
+    <div class="detail-actions"><button id="watch-video">Watch gameplay</button><a class="store" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest</a></div>
+    <p class="video-note">Videos feature more than one game. No headset needed to watch.</p>
+  </dialog>
+  <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
+  <script type="module">
+    import('./showroom.bundle.js').catch(() => {
+      document.querySelector('#status').innerHTML='The 3D room could not load. <a href="../#latest-media">Watch gameplay on the website</a>.';
+      document.querySelector('#enter-vr').textContent='3D unavailable';
+    });
+  </script>
+</body>
+</html>
