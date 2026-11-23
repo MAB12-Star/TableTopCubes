@@ -8,7 +8,7 @@ Standalone, buildless WebXR page at `/vr/`. The Unity game and its project setti
 - The original KUBIKOS Penguin mesh and Idle animation, converted from the imported FBX to GLB. The atlas is a resized copy of the original texture; no replacement animal was generated.
 - Desktop/touch orbit preview, accessible HTML game buttons, reduced-motion support, and a regular website fallback.
 - WebXR controller ray selection for either input source, hit dots, and optional browser hand tracking/pinch selection. In-world video Play/Pause, Sound, Close, and Meta Store buttons.
-- Four clear-floor teleport destinations. Either controller's select/trigger or either tracked hand's browser pinch/select uses the same targets. Tracked physical room offsets and head height are preserved; no forced camera turn. The video viewer opens in front of the current viewing position and blocks teleport targets until closed.
+- Six clear-floor teleport destinations. Either controller's select/trigger or either tracked hand's browser pinch/select uses the same targets. Tracked physical room offsets and head height are preserved; no forced camera turn. The video viewer opens in front of the current viewing position and blocks teleport targets until closed.
 - Environment geometry follows `TableTopVirtualRoom.BuildRoom`: 12m square shell, ceiling at 4.55m, twenty wall bays, half-meter floor lines and cyan trim, rendered in four instanced batches. Showroom game displays remain separate exhibits.
 - Teleport reads the rig-parented application camera, not the detached XR ArrayCamera, so repeated teleports retain the rig offset. Regression checks model a detached XR camera and repeat floor-ray selections with both input sources and a nonzero physical tracking offset.
 - No automatic video download/playback. One video at a time. No shadows, postprocessing, extra physics, or online services.
@@ -34,7 +34,7 @@ Open https://www.tabletopcubes.com/vr/ in the headset browser (not Unity/Quest L
 Selecting a display's PLAY circle hides that exhibit and opens its video panel plus a separate mini board in front. Either WebXR input source uses the same point-and-select buttons. Desktop users choose Play mini sample in the details dialog, then use the same controls with mouse/touch.
 
 - Cubes: four small piece shapes, one-cell movement, bounded quarter turns, hard drop, line clearing, game over and a 30-point sample goal.
-- Snake: a 10x10 sample board, growth/food, wall/self collision, directional buttons and a five-food goal.
+- Snake: a 10x10 sample board, growth/food, edge wrapping and self collision, directional buttons and a five-food goal.
 - Pongo: point at the board to position the paddle, bounce at a moving target, three lives and a 50-point goal. Left/right buttons are also available.
 
 Only one sample runs at once. Sample cells use five instanced batches; targets, generated text textures, mesh buffers and materials are released when closing or switching. No network gameplay or Unity services are used. These are simplified browser samples, not full ports of the Unity games or their gesture recognizers.
@@ -50,3 +50,5 @@ Left wall: top five full-game scores for Cubes, Snake and Pongo, with original a
 Uses the existing public leaderboard snapshot, updated hourly by GitHub Actions. Server-side export explicitly requests score metadata and publishes only the stable profileIcon ID (0–11), rank, display name and points. No service credentials are sent to the browser. Missing old icon metadata is visibly unknown. Six cached canvas textures refresh only when data/images change; data is checked every five minutes, not every frame.
 
 Samples now open at 3.8 normalized meters rather than 3.3, preserving the seated fit. Step Back moves the rig 0.6m opposite horizontal head direction while keeping the sample anchored and preserving tracked eye height. It debounces selects and rejects destinations near walls, tables or the companion pedestal. Room navigation has Step Back and Welcome; each sample has Step Back and Back to Room near its game controls.
+
+Current sample distance: 4.75 normalized meters, 25% beyond the previous 3.8m placement. Cubes Forward/Back moves the active piece through ten depth lanes with bounds and occupancy checks; cleared ten-cell lines collapse blocks above in the same lane. Snake wraps modulo ten across all four edges. Sample blocks use rounded geometry and shaded materials in five instanced batches; the Pongo paddle is rounded. Room Step Back and Welcome buttons are reduced, as is the sample's Step Back button.

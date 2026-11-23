@@ -174,8 +174,8 @@ function stepBack(){
   rig.position.x+=x-head.x;rig.position.z+=z-head.z;rig.updateMatrixWorld(true);lastTeleport=performance.now();placeRoomNavigation();return true;
 }
 const roomNavigation=new THREE.Group();roomNavigation.visible=false;scene.add(roomNavigation);
-button('STEP BACK',-.5,0,0,stepBack,roomNavigation,.9);
-button('WELCOME',.5,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.9);
+const stepNav=button('STEP BACK',-.36,0,0,stepBack,roomNavigation,.62);stepNav.scale.y=.60;
+const welcomeNav=button('WELCOME',.36,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.62);welcomeNav.scale.y=.60;
 function placeRoomNavigation(){
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -264,7 +264,7 @@ async function openGame(id) {
     // without changing the headset camera or its physical tracking origin.
     const fit=THREE.MathUtils.clamp(head.y/1.65,.45,1.2);
     viewer.scale.setScalar(fit);
-    viewer.position.set(head.x+headForward.x*3.8*fit,head.y-1.65*fit,head.z+headForward.z*3.8*fit);
+    viewer.position.set(head.x+headForward.x*4.75*fit,head.y-1.65*fit,head.z+headForward.z*4.75*fit);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
   }else{
     viewer.scale.setScalar(1);viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
@@ -283,7 +283,7 @@ async function toggleVideo() {
   } else {video.pause();$('#watch-video').textContent='Continue gameplay';}
 }
 function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
-$('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,3.5);controls.target.set(0,1.5,.1);controls.update();});
+$('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,4.8);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeGame();});
