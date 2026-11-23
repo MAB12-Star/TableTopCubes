@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {createPongoSample} from './pongo-sample.js';
 
 // Small browser-native arcade samples, independent of the Unity game rules.
 export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart,onBack,onClose}){
@@ -17,6 +18,10 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   for(const x of [-.91,.91])box(.018,.012,1.82,trim,x,.75,1.04,root);
   for(const z of [.13,1.95])box(1.82,.012,.018,trim,0,.75,z,root);
   const grid=new THREE.GridHelper(1.76,10,0x4ce8d4,0x245160);grid.position.set(0,.755,1.04);root.add(grid);
+  if(id!=='cubes'){
+    const cage=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.76,id==='snake'?1.5:1.9,1.76)),new THREE.LineBasicMaterial({color:'#4b8495',transparent:true,opacity:.25,toneMapped:false}));
+    cage.position.set(0,id==='snake'?1.5:1.7,1.04);root.add(cage);
+  }
   let caption,captionText='',score=0,running=false,ended=false,timer=0,notified=false;
   function say(text){if(text===captionText)return;captionText=text;if(caption){root.remove(caption);caption.geometry.dispose();caption.material.map.dispose();caption.material.dispose();}caption=label(text,1400,130,'#ffcb73',50,'#0b1d2b');caption.scale.setScalar(.48);caption.position.set(0,.84,2.15);root.add(caption);if(!notified&&/^(GAME OVER|YOU WIN)/.test(text)){notified=true;onEnd?.({won:text.startsWith('YOU WIN'),score,game:id});}}
   // Coplanar rows cannot hide one another. Shorter buttons sit below the board
@@ -41,32 +46,23 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
     piece=shapes[1];render();say('CUBES / SELECT START / CLEAR LINES');
     state=()=>({x,y,z,settled:settled.map(b=>({...b}))});
   }else if(id==='snake'){
-    let snake=[{x:4,z:5},{x:4,z:6}],food={x:4,z:2},dir={x:0,z:-1},next=dir;
+    let snake=[{x:4,y:0,z:5},{x:4,y:0,z:6}],food={x:4,y:0,z:2},dir={x:0,y:0,z:-1},next=dir;
     function render(){draw([...snake.map((p,i)=>({...p,c:i?0:3})),{...food,c:2}]);}
-    function steer(x,z){if(!running)return;if(x!==-dir.x||z!==-dir.z)next={x,z};}
+    function steer(x,z,y=0){if(!running)return;if(x!==-dir.x||z!==-dir.z||y!==-dir.y)next={x,y,z};}
     ctl('LEFT',-.65,2.23,()=>steer(-1,0));ctl('FORWARD',0,2.23,()=>steer(0,-1));ctl('RIGHT',.65,2.23,()=>steer(1,0));
     ctl('BACK',-.45,2.65,()=>steer(0,1),.75);ctl('START / RESET',.45,2.65,()=>reset(),.85);
-    reset=()=>{score=0;snake=[{x:4,z:5},{x:4,z:6}];food={x:4,z:2};dir={x:0,z:-1};next=dir;running=true;ended=false;timer=0;render();say('SNAKE / EAT 5 CUBES');};
-    update=dt=>{if(!running)return;timer+=dt;if(timer<.42)return;timer=0;dir=next;const head={x:(snake[0].x+dir.x+10)%10,z:(snake[0].z+dir.z+10)%10};const eating=head.x===food.x&&head.z===food.z;
-      if(snake.slice(0,eating?snake.length:-1).some(p=>p.x===head.x&&p.z===head.z)){running=false;ended=true;say(`GAME OVER / ${score} POINTS / RESTART`);return;}
-      snake.unshift(head);if(eating){score++;if(score>=5){running=false;say('YOU WIN / 5 POINTS / PLAY AGAIN');}else{const free=[];for(let x=0;x<10;x++)for(let z=0;z<10;z++)if(!snake.some(p=>p.x===x&&p.z===z))free.push({x,z});food=free[Math.floor(Math.random()*free.length)];say(`SNAKE / +1 / ${score} OF 5`);}}else snake.pop();render();};
+    for(const [text,d,py] of [['UP',1,.52],['DOWN',-1,.22]]){const b=button(text,-1.4,py,2.15,()=>steer(0,0,d),root,.65);b.scale.y=.5;b.name=text;}
+    reset=()=>{score=0;snake=[{x:4,y:0,z:5},{x:4,y:0,z:6}];food={x:4,y:0,z:2};dir={x:0,y:0,z:-1};next=dir;running=true;ended=false;timer=0;render();say('3D SNAKE / EAT 5 / UP AND DOWN TO CLIMB');};
+    update=dt=>{if(!running)return;timer+=dt;if(timer<.42)return;timer=0;dir=next;const head={x:(snake[0].x+dir.x+10)%10,y:(snake[0].y+dir.y+10)%10,z:(snake[0].z+dir.z+10)%10};const eating=head.x===food.x&&head.y===food.y&&head.z===food.z;
+      if(snake.slice(0,eating?snake.length:-1).some(p=>p.x===head.x&&p.y===head.y&&p.z===head.z)){running=false;ended=true;say(`GAME OVER / ${score} POINTS / RESTART`);return;}
+      snake.unshift(head);if(eating){score++;if(score>=5){running=false;say('YOU WIN / 5 POINTS / PLAY AGAIN');}else{const free=[];for(let x=0;x<10;x++)for(let y=0;y<10;y++)for(let z=0;z<10;z++)if(!snake.some(p=>p.x===x&&p.y===y&&p.z===z))free.push({x,y,z});food=free[Math.floor(Math.random()*free.length)];say(`SNAKE / +1 / ${score} OF 5`);}}else snake.pop();render();};
     render();say('SNAKE / SELECT START / EAT 5 CUBES');
     state=()=>({snake:snake.map(p=>({...p})),food:{...food},dir:{...dir}});
   }else{
-    let px=0,bx=0,bz=.1,vx=.45,vz=.7,hits=0,lives=3;
-    const paddle=box(.5,.08,.18,mats[3],0,.86,1.75,root);
-    paddle.geometry.dispose();paddle.geometry=new RoundedBoxGeometry(.5,.08,.18,2,.025);
-    paddle.castShadow=true;
-    const ball= new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),mats[2]);ball.castShadow=true;root.add(ball);
-    const target=box(.35,.25,.22,mats[1],0,.94,.32,root);
-    target.castShadow=true;
-    const aim=new THREE.Mesh(new THREE.PlaneGeometry(1.8,1.8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));aim.rotation.x=-Math.PI/2;aim.position.set(0,.78,1.04);root.add(aim);targets.push(aim);
-    aim.userData.action=()=>{if(!running)reset();};aim.userData.aim=point=>{const local=root.worldToLocal(point.clone());px=THREE.MathUtils.clamp(local.x,-.63,.63);};
-    ctl('LEFT',-.65,2.23,()=>{px=Math.max(-.63,px-.18);});ctl('START / RESET',0,2.23,()=>reset(),.8);ctl('RIGHT',.65,2.23,()=>{px=Math.min(.63,px+.18);});
-    reset=()=>{score=0;hits=0;lives=3;bx=0;bz=0;vx=.45;vz=.7;running=true;say('PONGO / AIM AT BOARD TO MOVE PADDLE');};
-    update=dt=>{paddle.position.x=px;if(running){bx+=vx*dt;bz+=vz*dt;if(Math.abs(bx)>.76){bx=Math.sign(bx)*.76;vx=-vx;}if(bz<-.73){bz=-.73;vz=Math.abs(vz);if(Math.abs(bx-target.position.x)<.24){score+=10;hits++;target.position.x=[-.48,0,.48][hits%3];say(`PONGO / +10 / ${score} OF 50`);if(score>=50){running=false;say('YOU WIN / 50 POINTS / PLAY AGAIN');}}}if(vz>0&&bz>.58&&bz<.79&&Math.abs(bx-px)<.32){bz=.58;vz=-Math.abs(vz);vx=(bx-px)*2.2;}if(bz>.9){lives--;if(!lives){running=false;say('GAME OVER / SELECT START TO RETRY');}else{bx=0;bz=0;vz=.7;say(`PONGO / ${lives} LIVES / ${score} POINTS`);}}}ball.position.set(bx,.94,1.04+bz);};
-    say('PONGO / SELECT START / HIT THE TARGET');update(0);
+    const pongo=createPongoSample(root,{box,label,mats,ctl,button,say,targets,restart:()=>reset(),onScore:value=>score=value});
+    update=pongo.update;reset=pongo.reset;state=()=>pongo.state;
   }
+
   const back=button('STEP BACK',1.45,.52,2.15,()=>onBack?.(),root,.52);back.scale.y=.4;back.name='STEP BACK';
   const close=button('BACK TO ROOM',1.45,.22,2.15,()=>onClose?.(),root,.7);close.scale.y=.5;close.name='BACK TO ROOM';
   const begin=reset;reset=()=>{notified=false;begin();onRestart?.();};

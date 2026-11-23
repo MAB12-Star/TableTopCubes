@@ -17,11 +17,11 @@ const games = {
     help:'Solo or Two Player: share a board and compete to complete lines. The full game includes hands, Touch controllers, and guided practice.',
     video:'assets/gameplay/cubes-gameplay.mp4'},
   snake: {name:'Cube Snake',tag:'EAT / GROW',color:'#53e6ac',image:'snake-solo.webp',
-    description:'One more bite. Steer through a 3D grid, chase food, and keep your growing trail out of trouble.',
+    description:'One more bite. Steer across the board, climb and descend through a 3D grid, and wrap around its edges.',
     help:'Solo or Two Player: chase a shared food cube and avoid both snakes. Try the full game’s animated hand and controller guides.',
     video:'assets/gameplay/snake-gameplay.mp4'},
   pongo: {name:'Pongo',tag:'BOUNCE / AIM',color:'#ffc25b',image:'pongo-solo.webp',
-    description:'Find your angle. Bounce the ball toward targets and keep the rally alive.',
+    description:'Find your angle. Move and tilt a horizontal paddle to bounce the ball upward into three floating targets.',
     help:'Solo or Two Player: each player controls a paddle and competes to hit the targets. Watch both the virtual room and passthrough in action.',
     video:'assets/gameplay/pongo-gameplay.mp4'}
 };
@@ -140,7 +140,7 @@ function button(text,x,y,z,action,parent=scene,width=1.0) {
 const tables=[];
 for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const game=games[id], table=new THREE.Group();
-  table.position.set((i-1)*2.65,0,i===1?-2.0:-1.3);
+  table.position.set((i-1)*2.65,0,i===1?-3.0:-2.3);
   table.rotation.y=(1-i)*.23;scene.add(table);tables.push(table);
   const accent=new THREE.MeshBasicMaterial({color:game.color,toneMapped:false});
   const consoleTop=box(2.25,.16,1.35,materials.table,0,.83,0,table);consoleTop.geometry.dispose();consoleTop.geometry=new RoundedBoxGeometry(2.25,.16,1.35,2,.05);consoleTop.castShadow=true;
@@ -178,7 +178,7 @@ const companionLabel=label('COMPANION CLUB',1000,160,'#a4e8e3',52,'#08131d');com
 const teleportSpots=[
   {name:'WELCOME',x:0,z:3.65},
   {name:'CUBES',x:-2.65,z:1.8},
-  {name:'SNAKE',x:0,z:1.8},
+  {name:'SNAKE',x:0,z:-1.1},
   {name:'PONGO',x:2.65,z:1.8},
   {name:'RANKINGS',x:-4.2,z:1.8},
   {name:'CHAMPIONS',x:4.2,z:1.8}
@@ -305,7 +305,12 @@ async function openGame(id) {
     // without changing the headset camera or its physical tracking origin.
     const fit=THREE.MathUtils.clamp(head.y/1.65,.45,1.2);
     viewer.scale.setScalar(fit);
-    viewer.position.set(head.x+headForward.x*4.75*fit,head.y-1.65*fit,head.z+headForward.z*4.75*fit);
+    // Keep the video panel inside the room when entering from the rear circle.
+    const distance=4.75*fit;
+    const limitX=headForward.x>0?(5.6-head.x)/headForward.x:headForward.x<0?(-5.6-head.x)/headForward.x:Infinity;
+    const limitZ=headForward.z>0?(5.6-head.z)/headForward.z:headForward.z<0?(-5.6-head.z)/headForward.z:Infinity;
+    const fitDistance=Math.max(1.8*fit,Math.min(distance,limitX,limitZ));
+    viewer.position.set(head.x+headForward.x*fitDistance,head.y-1.65*fit,head.z+headForward.z*fitDistance);
     viewer.rotation.y=Math.atan2(-headForward.x,-headForward.z);
   }else{
     viewer.scale.setScalar(1);viewer.position.set(0,0,-1.7);viewer.rotation.y=0;
@@ -439,7 +444,7 @@ renderer.setAnimationLoop(time=>{
         p.dot.visible=!!hit&&controllers[i].visible;
         p.line.scale.z=hit?hit.distance:4;
         if(hit)p.dot.position.copy(hit.point);
-        hit?.object.userData.aim?.(hit.point);
+        hit?.object.userData.aim?.(hit.point,controllers[i]);
       }
     }
     renderer.render(scene,camera);

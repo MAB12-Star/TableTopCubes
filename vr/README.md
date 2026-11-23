@@ -66,3 +66,13 @@ Each sample now uses its own 20-second, 1280x720 landscape clip, cut directly fr
 Both the desktop copy and in-world panel explicitly identify the mini games as simplified browser samples and the video as real full-game footage. Joystick movement is unchanged, as requested.
 
 Wall display update: six rounded metallic bezels have color-coded neon rails (Cubes violet, Snake green, Pongo gold) and low-opacity additive halos. Four rails and four halos are instanced per frame; existing score/image planes sit ahead of the bezel so they remain unobstructed. No new lights or bloom passes were added. The animal pedestal uses a dark rounded cabinet, metallic top, thin perimeter neon, plinth, vents and Companion Club plaque; the original animals and dimensions are retained.
+
+## 3D gameplay alignment
+
+The game exhibit cabinets moved one meter back. Snake's floor destination is now (0, -1.1), behind the companion pedestal and clear of its bounds. Video/sample placement is capped to the room interior when entering from a rear destination.
+
+Snake is now a 10x10x10 preview volume with Left/Right/Forward/Back/Up/Down, exact reverse prevention, wrapping on x/y/z, 3D food placement, growth, and self-collision. The six-axis wrapping and tick-direction rules follow CubeSnakeMovement.cs; the preview retains its shorter five-food goal.
+
+Pongo now uses fixed 180Hz substeps for a constant-speed ball in x/y/z, reflective side/ceiling bounds and an open bottom. Its horizontal paddle moves in both board axes, tilts from tracked input orientation over the board or tilt buttons, and returns the ball using the PongoBounce Reflect/Paddle weighting (.35 normal plus .65 planar offset with outward minimum). Three floating targets use Pongo_Object scale factors 1.35/1/.65 and 5/10/15 points. Swept expanded-box hits, target replacement, color-matched debris, floating point text, a ball trail, and a wall-folded landing ring are included. It retains three lives and a short 50-point preview goal. These mirror the full game's core mechanics, not its complete progression, SDK input system or Unity physics engine.
+
+Regression checks cover 3D Snake food routes and all six wrapping boundaries, Pongo upward/tilted rebounds, floating-target score acquisition, lost lives/end-store screen, and existing teleport/layout/video behavior. Real headset rendering and physical input remain unverified.
