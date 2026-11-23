@@ -1,78 +1,42 @@
-# TableTop VR showroom
+# TableTop VR arcade
 
-Standalone, buildless WebXR page at `/vr/`. The Unity game and its project settings are unchanged.
+Standalone browser showroom at /vr/. The Unity project is unchanged.
 
-## Included
+## Experience
 
-- Three game display tables using actual solo screenshots and existing solo/multiplayer videos.
-- The original KUBIKOS Penguin mesh and Idle animation, converted from the imported FBX to GLB. The atlas is a resized copy of the original texture; no replacement animal was generated.
-- Desktop/touch orbit preview, accessible HTML game buttons, reduced-motion support, and a regular website fallback.
-- WebXR controller ray selection for either input source, hit dots, and optional browser hand tracking/pinch selection. In-world video Play/Pause, Sound, Close, and Meta Store buttons.
-- Six clear-floor teleport destinations. Either controller's select/trigger or either tracked hand's browser pinch/select uses the same targets. Tracked physical room offsets and head height are preserved; no forced camera turn. The video viewer opens in front of the current viewing position and blocks teleport targets until closed.
-- Environment geometry follows `TableTopVirtualRoom.BuildRoom`: 12m square shell, ceiling at 4.55m, twenty wall bays, half-meter floor lines and cyan trim, rendered in four instanced batches. Showroom game displays remain separate exhibits.
-- Teleport reads the rig-parented application camera, not the detached XR ArrayCamera, so repeated teleports retain the rig offset. Regression checks model a detached XR camera and repeat floor-ray selections with both input sources and a nonzero physical tracking offset.
-- No automatic video download/playback. One video at a time. No post-processing or extra physics; full-game scores are read from the existing snapshot.
+- A 12m virtual arcade based on TableTopVirtualRoom.BuildRoom, with six floor teleport destinations and Step Back / Welcome navigation.
+- Three arcade exhibits, game-specific 20s landscape videos and simplified playable browser samples.
+- The original Penguin, White Fox and Unicorn models, reduced on the Companion Club pedestal. GLBs are derived from the purchased KUBIKOS FBXs, retain Idle frames 0-40 at 30fps, and share the original 2048px texture atlas. These are embedded showroom assets, not a reusable asset download.
+- Left wall: real top-five scores with saved profile icons. Right wall: each game's current high-score champion, portrait and trophy. Scores come from the existing public snapshot; old rows without metadata have an unknown icon.
+- Mood lighting, one prefiltered environment, one 1024px soft-shadow pass, neon wall frames and rounded cabinets. UI and video bypass scene tone mapping.
+- Loading waits for assets and sample shader preparation; it has no forced delay.
 
-## Sources and dependencies
+## Samples and input
 
-`assets/penguin.glb`: derived from `Assets/KUBIKOS-Animated Cube Mini Animals 2/Animals2_Models/Penguin.fbx`, Idle frames 0â€“40 at 30fps, matching its Unity import metadata. Original model/texture remain subject to the purchased asset license; they are included only as assets of this showroom, not a reusable asset download offering.
+Cubes has bounded x/z movement, quarter turns, hard drop, depth-lane line clearing and a 30-point preview goal. Snake moves in all six directions, wraps x/y/z, grows with food, detects self-collision and has a five-food goal. Pongo uses 3D constant-speed flight, horizontal tiltable paddle, three 1.35/1/.65 targets worth 5/10/15 points, an open bottom, three lives, swept hits, debris, trail and landing ring. Its preview goal is 50. These follow the core solo mechanics, not the complete Unity game or progression.
 
-`assets/animal-atlas.webp`: original `KUBIKOS_Animals2_D.png`, downsampled to 2048 square for the small companion display. Original UVs are retained; runtime TextureLoader uses flipY=true.
+Either hand's browser pinch/select or either controller's trigger can select controls. XR-standard thumbsticks now also control Cubes and Snake: left stick moves/steers x/z; right stick turns Cubes or selects Snake Up/Down. A/X starts an inactive sample and drops a piece during Cubes play; B/Y restarts. Dead zone, neutral hysteresis, delayed cell repeat and one-turn-per-flick avoid drift/spam. Joysticks do not move the room rig.
 
-Three.js 0.187.0, self-hosted in `showroom.bundle.js`; see `THREE-LICENSE.txt`. The entry source is `showroom.js`. Rebuild with esbuild, ESM output, ES2022 target and minification. The developer's isolated dependency/build tools live outside the website repository at `C:/Users/micha/Documents/Codex/WebXR-Tools`; they do not affect the site's legacy package.json/node_modules.
+Exhibits fit to eye height without changing headset tracking. Control rows share a plane and do not overlap. Samples normally start 4.75 normalized meters away, capped to the room interior from rear positions. Snake's floor marker is behind the animal pedestal. Step Back leaves the game anchored and rejects destinations near walls/tables.
 
-## Verification limits
+A sample ending offers Meta Store, itch.io, Play Again and Back to Room. Store selection explicitly exits VR before navigation. One sample runs at a time; its targets, buffers and generated textures are released on close/switch.
 
-Static source/bundle checks, glTF validation, animation/geometry checks, preservation of existing media, and HTTP checks are automated. Actual WebXR session, hand tracking, device frame timing, audiovisual appearance, and controller selection require browser/headset testing. Do not claim device verification from static checks.
+## Media
 
-## Quest test
+Videos: Cubes source 182-202s, Snake 373-393s, Pongo 548-568s from the user's Nov22 1:00 PM solo recording. Exports are 1280x720 / 30fps / 20s with fit/pad and square pixels. WhatsApp source is about 480p: these exports are upscaled, not restored native HD. Original conversation is omitted; the user's existing Mixkit689 music is quiet background audio. No prior site media was removed. Runtime video fitting also prevents stretching unusual aspect ratios.
 
-Open https://www.tabletopcubes.com/vr/ in the headset browser (not Unity/Quest Link). Select Enter VR and allow the session. Try each game's display with left and right controllers; check the hit dot, Play/Pause, Sound, Close, and Meta Store. If using hands, test pinch selection separately; availability depends on browser support. Confirm the penguin animates, textures are correct, and the room stays stable when turning your head. Exit VR and check the normal site still works.
+The page and in-world panel clearly distinguish simplified web samples from full-game footage.
 
-## Playable mini samples
+## Analytics and discoverability
 
-Selecting a display's PLAY circle hides that exhibit and opens its video panel plus a separate mini board in front. Either WebXR input source uses the same point-and-select buttons. Desktop users choose Play mini sample in the details dialog, then use the same controls with mouse/touch.
+assets/analytics.js loads the user's tabletopcubes.goatcounter.com tracker on Home, VR, About and Privacy pages. Named aggregate events cover sample open/start/end/win, video play/completion, VR entry/exit and Meta/itch store clicks. No player names, scores, hand poses or gamepad-axis payloads are sent. A bounded queue covers tracker load delays. Validation sends no production events; private dashboard totals have not been read. Counts depend on visitor blocking/privacy settings.
 
-- Cubes: four small piece shapes, one-cell movement, bounded quarter turns, hard drop, line clearing, game over and a 30-point sample goal.
-- Snake: a 10x10 sample board, growth/food, edge wrapping and self collision, directional buttons and a five-food goal.
-- Pongo: point at the board to position the paddle, bounce at a moving target, three lives and a 50-point goal. Left/right buttons are also available.
+SEO includes canonical URLs/descriptions on four pages, VR social previews, WebApplication/WebSite JSON-LD, readable HTML sample/control information, robots.txt and sitemap.xml. This prepares discoverability; indexing/rankings and Search Console ownership are not established by deployment. The website-specific analytics notice is separate from the legacy game privacy text.
 
-Only one sample runs at once. Sample cells use five instanced batches; targets, generated text textures, mesh buffers and materials are released when closing or switching. No network gameplay or Unity services are used. These are simplified browser samples, not full ports of the Unity games or their gesture recognizers.
+## Build and verification
 
-At a sample win or game over, an in-world purchase card (and accessible desktop card) offers Meta Store, itch.io, Play Again, and Back to Room. Store buttons explicitly exit an active XR session before navigating. End detection is one-shot per round and is reset on replay.
+Three.js 0.187.0, self-hosted in showroom.bundle.js; see THREE-LICENSE.txt. Source entry: showroom.js. Bundle with esbuild, ESM, ES2022, minified. Isolated build/export/test tools live outside this repository under Documents/Codex/WebXR-Tools; legacy website dependencies are unchanged.
 
-Seated layout: the exhibit fits to tracked eye height (tested at 0.9m, 1.2m and 1.8m in the simulation) without altering headset tracking. Sample control rows share one plane, have separated vertical bounds, and sit below the board's front edge. Physical headset appearance remains to be checked.
+Checks include GLB validity and animation, original media preservation, both input-source ray paths, thumbstick dead zone/repeat/edges, three-axis wrapping, 3D Pongo target/paddle/miss rules, seated layout, teleport offsets, lifecycle cleanup, aspect ratios, analytics queue/payloads, SEO metadata and live HTTP assets. Browser/GPU APIs are mocked in interaction tests. Actual headset visuals, physical input, device frame timing and live private analytics totals remain unverified.
 
-## Score walls
-
-Left wall: top five full-game scores for Cubes, Snake and Pongo, with original animal portraits. Right wall: current high-score leader per game, their portrait and a gold trophy composition. These are leaderboard leaders, not a claim about the last multiplayer match. New Rankings and Champions floor destinations provide closer viewing.
-
-Uses the existing public leaderboard snapshot, updated hourly by GitHub Actions. Server-side export explicitly requests score metadata and publishes only the stable profileIcon ID (0–11), rank, display name and points. No service credentials are sent to the browser. Missing old icon metadata is visibly unknown. Six cached canvas textures refresh only when data/images change; data is checked every five minutes, not every frame.
-
-Samples now open at 3.8 normalized meters rather than 3.3, preserving the seated fit. Step Back moves the rig 0.6m opposite horizontal head direction while keeping the sample anchored and preserving tracked eye height. It debounces selects and rejects destinations near walls, tables or the companion pedestal. Room navigation has Step Back and Welcome; each sample has Step Back and Back to Room near its game controls.
-
-Current sample distance: 4.75 normalized meters, 25% beyond the previous 3.8m placement. Cubes Forward/Back moves the active piece through ten depth lanes with bounds and occupancy checks; cleared ten-cell lines collapse blocks above in the same lane. Snake wraps modulo ten across all four edges. Sample blocks use rounded geometry and shaded materials in five instanced batches; the Pongo paddle is rounded. Room Step Back and Welcome buttons are reduced, as is the sample's Step Back button.
-
-Graphics update: the original Penguin, White Fox and Unicorn share the pedestal at reduced scale. Each is fitted within 0.30m width and 0.36m height, retaining its original idle animation. The shared original animal atlas is now 2048px. Sample blocks have clearcoat highlights, rounded board edges, and cyan perimeter trim. A studio environment is prefiltered once at startup for material reflections; no real-time mirror passes are added (the mood-lighting update below adds one soft-shadow pass).
-
-A full-page loading screen reports asset progress, waits for the three display posters and companions, and warms all three samples' shaders before enabling Enter VR. There is no forced waiting period. GPU appearance and frame timing require physical/browser QA; automated interaction tests mock the renderer and do not validate the lighting pass.
-
-## Mood arcade and video correction
-
-Lighting is now lower-exposure with reduced studio reflections, a warm key and blue rim. One 1024px directional soft-shadow map supplies contact/depth shadows on the floor, sample decks and companion block. Physical cabinets have rounded tops/bezels, substantial bases/side cheeks, accent trim, framed buttons and marquee panels. Videos and canvas UI bypass scene tone mapping so lighting cannot wash out their colors.
-
-Each sample now uses its own 20-second, 1280x720 landscape clip, cut directly from the user's Nov22 solo source. The actual source is WhatsApp-compressed 848x478; export is upscaled, not restored native HD. All three retain source proportions with fit/pad and square pixels. Runtime metadata also fits unusual video aspect ratios without stretching. No old website media was deleted. Source cuts: Cubes 182–202s, Snake 373–393s, Pongo 548–568s. Source conversation is omitted; the user's existing Mixkit689 track supplies quiet music. All outputs were fully decoded without errors and reviewed in contact sheets.
-
-Both the desktop copy and in-world panel explicitly identify the mini games as simplified browser samples and the video as real full-game footage. Joystick movement is unchanged, as requested.
-
-Wall display update: six rounded metallic bezels have color-coded neon rails (Cubes violet, Snake green, Pongo gold) and low-opacity additive halos. Four rails and four halos are instanced per frame; existing score/image planes sit ahead of the bezel so they remain unobstructed. No new lights or bloom passes were added. The animal pedestal uses a dark rounded cabinet, metallic top, thin perimeter neon, plinth, vents and Companion Club plaque; the original animals and dimensions are retained.
-
-## 3D gameplay alignment
-
-The game exhibit cabinets moved one meter back. Snake's floor destination is now (0, -1.1), behind the companion pedestal and clear of its bounds. Video/sample placement is capped to the room interior when entering from a rear destination.
-
-Snake is now a 10x10x10 preview volume with Left/Right/Forward/Back/Up/Down, exact reverse prevention, wrapping on x/y/z, 3D food placement, growth, and self-collision. The six-axis wrapping and tick-direction rules follow CubeSnakeMovement.cs; the preview retains its shorter five-food goal.
-
-Pongo now uses fixed 180Hz substeps for a constant-speed ball in x/y/z, reflective side/ceiling bounds and an open bottom. Its horizontal paddle moves in both board axes, tilts from tracked input orientation over the board or tilt buttons, and returns the ball using the PongoBounce Reflect/Paddle weighting (.35 normal plus .65 planar offset with outward minimum). Three floating targets use Pongo_Object scale factors 1.35/1/.65 and 5/10/15 points. Swept expanded-box hits, target replacement, color-matched debris, floating point text, a ball trail, and a wall-folded landing ring are included. It retains three lives and a short 50-point preview goal. These mirror the full game's core mechanics, not its complete progression, SDK input system or Unity physics engine.
-
-Regression checks cover 3D Snake food routes and all six wrapping boundaries, Pongo upward/tilted rebounds, floating-target score acquisition, lost lives/end-store screen, and existing teleport/layout/video behavior. Real headset rendering and physical input remain unverified.
+Quest test: open https://www.tabletopcubes.com/vr/ in the headset browser, refresh, enter VR, and try both controllers then hands. Check menus, floor teleport, Step Back, all sample controls, thumbsticks, video playback and end-store choices. This does not require a Unity rebuild.

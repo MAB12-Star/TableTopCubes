@@ -3,11 +3,22 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#07131d">
-  <title>The VR Arcade | TableTop Cubes</title>
-  <meta name="description" content="Step inside the TableTop Cubes showroom. Explore Cubes, Cube Snake and Pongo, meet a companion, and watch real solo and multiplayer gameplay.">
+  <title>Free VR Arcade Demos | TableTop Cubes, Snake &amp; Pongo</title>
+  <meta name="description" content="Step inside the TableTop Cubes showroom. Try free 3D Cubes, Cube Snake and Pongo samples with Quest controllers or hands, watch real gameplay, and explore the VR arcade.">
+
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="TableTop Cubes">
+  <meta property="og:title" content="Step into the TableTop VR Arcade">
+  <meta property="og:description" content="Try free Cubes, 3D Snake and Pongo browser samples. Use hands or controllers in VR and watch the full Quest games in action.">
+  <meta property="og:url" content="https://www.tabletopcubes.com/vr/">
+  <meta property="og:image" content="https://www.tabletopcubes.com/assets/november-2026/menu.webp">
+  <meta property="og:image:alt" content="The TableTop Cubes virtual arcade game menu">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
   <link rel="stylesheet" href="showroom.css?v=20261123-mood-arcade">
+<script defer src="../assets/analytics.js?v=20261123"></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "TableTop Cubes VR Arcade Preview", "url": "https://www.tabletopcubes.com/vr/", "applicationCategory": "GameApplication", "operatingSystem": "WebXR-compatible browser", "isAccessibleForFree": true, "description": "Free simplified browser samples of Cubes, 3D Cube Snake and Pongo, with real gameplay videos from the full Meta Quest game.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "CC Creations", "url": "https://www.tabletopcubes.com/"}, "image": "https://www.tabletopcubes.com/assets/november-2026/menu.webp"}</script>
 </head>
 <body>
   <section id="loading-screen" aria-labelledby="loading-title" role="status">
@@ -38,6 +49,15 @@
     </nav>
     <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button></div>
     <p class="disclaimer">Simplified browser samples. Their graphics and controls differ from the full Quest game—watch the game-specific footage to see the full experience.</p>
+
+    <details class="showroom-guide"><summary>Controls and about these free VR samples</summary>
+      <h2>Three arcade game samples in your browser</h2>
+      <p>Explore Cubes, Cube Snake and Pongo in a virtual arcade. Open this page in a compatible headset browser and select Enter VR, or explore the 3D preview on a computer. These are simplified browser samples; the videos show the full Quest game.</p>
+      <h3>Cubes thumbstick controls</h3><p>Use the left thumbstick to move a piece left, right, forward or back. Flick the right thumbstick left or right for a 90-degree turn. Press A/X to start, then hard-drop a piece; B/Y restarts the sample.</p>
+      <h3>3D Snake thumbstick controls</h3><p>Use the left thumbstick to steer left, right, forward or back. Use the right thumbstick up or down to climb or descend. A/X starts; B/Y restarts. The snake wraps at the edges of its 3D board and grows when it eats food.</p>
+      <h3>Pongo and hand controls</h3><p>Point at the Pongo board to position your horizontal paddle and bounce the ball upward at floating targets. For any sample, point at its on-screen controls and pinch a tracked hand or press a controller trigger. Use the floor circles to teleport around the room.</p>
+      <p>The full TableTop Cubes collection includes solo and two-player games, animal companions and guided practice. <a href="../#online">Learn about online play</a>, <a href="../#controls">see the full-game controls</a>, or <a href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">visit the Meta Store</a>. <a href="../pages/PrivacyPolicy.html">Website privacy information</a>.</p>
+    </details>
   </main>
   <dialog id="details" aria-labelledby="detail-title">
     <button class="close" id="close-details" aria-label="Close game details">×</button>
@@ -54,7 +74,7 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261123-3d-gameplay').catch(() => {
+    import('./showroom.bundle.js?v=20261123-sticks-analytics').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
       document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
       document.querySelector('#loading-progress').hidden=true;

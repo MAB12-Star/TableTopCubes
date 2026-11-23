@@ -6,6 +6,7 @@ import {createSample} from './samples.js';
 import {installScoreWalls} from './walls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {createThumbstickControls} from './thumbsticks.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -30,6 +31,8 @@ const status = $('#status');
 const enterVR = $('#enter-vr');
 const dialog = $('#details');
 const video = $('#game-video');
+const track=name=>window.trackTableTop?.(name);
+const thumbsticks=createThumbstickControls();
 let selected = null, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let vrSupported=false;
 let mixer, companion, textureVideo, viewPoster;
@@ -257,10 +260,11 @@ box(2.72,.025,.025,materials.glow,0,3.72,.04,viewer);
 let viewerTitle=label('GAMEPLAY',1100,160,'#4df2e0',64);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
 const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.MeshBasicMaterial({color:'white',toneMapped:false}));videoScreen.position.set(0,2.55,.05);viewer.add(videoScreen);
 const viewerHint=label('SIMPLIFIED WEB SAMPLE / VIDEO SHOWS THE FULL GAME',1500,100,'#acbac9',33);viewerHint.scale.setScalar(.68);viewerHint.position.set(0,1.72,.06);viewer.add(viewerHint);
+let controlsLegend;
 button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
 button('SOUND',-.34,1.40,.07,()=>{video.muted=!video.muted;},viewer,.6);
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
-button('GET GAME',1.02,1.40,.07,async()=>{await renderer.xr.getSession()?.end();location.href=storeURL;},viewer,.6);
+button('GET GAME',1.02,1.40,.07,()=>visitStore(storeURL),viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;
 const purchase=new THREE.Group();purchase.position.z=1.55;purchase.visible=false;viewer.add(purchase);
 box(2.5,2.0,.06,materials.dark,0,1.75,0,purchase);
@@ -270,8 +274,9 @@ button('META STORE',-.59,1.91,.07,()=>visitStore(storeURL),purchase,1.05);
 button('ITCH.IO',.59,1.91,.07,()=>visitStore(itchURL),purchase,1.05);
 button('PLAY AGAIN',-.59,1.40,.07,()=>sample?.reset(),purchase,1.05);
 button('BACK TO ROOM',.59,1.40,.07,closeGame,purchase,1.05);
-async function visitStore(url){video.pause();const session=renderer.xr.getSession();if(session)await session.end();location.href=url;}
+async function visitStore(url){track(`vr-store-${url===storeURL?'meta':'itch'}`);video.pause();await window.flushTableTop?.();const session=renderer.xr.getSession();if(session)await session.end();location.href=url;}
 function endSample(result){
+  track(`vr-sample-${result.won?'win':'end'}-${result.game}`);
   sample.root.visible=false;purchase.visible=true;
   if(purchaseScore){purchase.remove(purchaseScore);purchaseScore.geometry.dispose();purchaseScore.material.map.dispose();purchaseScore.material.dispose();}
   const text=`${result.won?'YOU WIN':'SAMPLE OVER'} / ${result.score} POINTS`;
@@ -286,6 +291,7 @@ $('#sample-again').addEventListener('click',()=>sample?.reset());
 $('#sample-back').addEventListener('click',closeGame);
 async function openGame(id) {
   const game=games[id];if(!game)return;
+  track(`vr-sample-open-${id}`);thumbsticks.reset();
   sample?.dispose();sample=null;
   purchase.visible=false;$('#sample-result').hidden=true;
   tables.forEach((t,i)=>t.visible=['cubes','snake','pongo'][i]!==id);
@@ -296,8 +302,11 @@ async function openGame(id) {
   $('#watch-video').textContent='Watch gameplay';
   viewer.remove(viewerTitle);viewerTitle.geometry.dispose();viewerTitle.material.map.dispose();viewerTitle.material.dispose();
   viewerTitle=label('TABLETOP / '+game.name.toUpperCase(),1100,160,'#4df2e0',60);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
+  if(controlsLegend){viewer.remove(controlsLegend);controlsLegend.geometry.dispose();controlsLegend.material.map.dispose();controlsLegend.material.dispose();}
+  const hint=id==='cubes'?'LEFT STICK MOVE / RIGHT STICK TURN / A/X START OR DROP':id==='snake'?'LEFT STICK STEER / RIGHT STICK UP-DOWN / A/X START':'POINT AT BOARD / TILT WRIST / OR USE THE BUTTONS';
+  controlsLegend=label(hint,1800,100,'#9db8c9',38);controlsLegend.scale.setScalar(.60);controlsLegend.position.set(0,1.08,.07);viewer.add(controlsLegend);
   viewer.visible=true;
-  sample=createSample(id,viewer,{box,label,button,targets,onEnd:endSample,onRestart:resumeSample,onBack:stepBack,onClose:closeGame});
+  sample=createSample(id,viewer,{box,label,button,targets,onEnd:endSample,onRestart:()=>{resumeSample();track(`vr-sample-start-${id}`);},onBack:stepBack,onClose:closeGame});
   if(renderer.xr.isPresenting){
     const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
     if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -334,7 +343,9 @@ video.addEventListener('loadedmetadata',()=>{
   const aspect=video.videoWidth/video.videoHeight,frame=16/9;
   videoScreen.scale.set(aspect<frame?aspect/frame:1,aspect>frame?frame/aspect:1,1);
 });
-function closeGame() {video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+function closeGame() {thumbsticks.reset();video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+video.addEventListener('play',()=>{if(selected)track(`vr-video-play-${selected}`);});
+video.addEventListener('ended',()=>{if(selected)track(`vr-video-complete-${selected}`);});
 $('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,4.8);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
@@ -377,6 +388,7 @@ for(let i=0;i<2;i++) {
 function castController(controller) {rotation.identity().extractRotation(controller.matrixWorld);raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);raycaster.ray.direction.set(0,0,-1).applyMatrix4(rotation);}
 let desktopPose;
 renderer.xr.addEventListener('sessionstart',()=>{
+  track('vr-enter');
   desktopPose={position:camera.position.clone(),quaternion:camera.quaternion.clone()};
   controls.enabled=false;camera.position.set(0,0,0);camera.quaternion.identity();rig.position.set(0,0,3.65);
   teleportGroup.visible=true;lastTeleport=-Infinity;
@@ -385,6 +397,7 @@ renderer.xr.addEventListener('sessionstart',()=>{
   enterVR.textContent='Exit VR';
 });
 renderer.xr.addEventListener('sessionend',()=>{
+  track('vr-exit');
   rig.position.set(0,0,0);if(desktopPose){camera.position.copy(desktopPose.position);camera.quaternion.copy(desktopPose.quaternion);}
   controls.enabled=true;controls.update();document.body.classList.remove('xr-active');closeGame();
   teleportGroup.visible=false;
@@ -420,6 +433,7 @@ if(renderer.compileAsync){
   }finally{scene.remove(warmup);}
 }
 loading(100,'Ready to explore');
+track('vr-room-ready');
 renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
@@ -427,6 +441,7 @@ renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
     if(!paused)for(const m of companionMixers)m.update(delta);
+    if(renderer.xr.isPresenting&&!purchase.visible&&!dialog.open)thumbsticks.update(renderer.xr.getSession(),selected,sample,time/1000);else thumbsticks.reset();
     if(!document.hidden&&!dialog.open)sample?.update(delta);
     if(!renderer.xr.isPresenting){
       controls.update();

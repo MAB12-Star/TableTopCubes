@@ -28,7 +28,7 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   // instead of the old near row filling the user's view and obscuring row one.
   function ctl(text,x,row,fn,width=.55){const b=button(text,x,row<2.4?.52:.22,2.15,fn,root,width);b.scale.y=.5;b.name=text;return b;}
   function draw(points){counts.fill(0);for(const p of points){const c=p.c||0;cellTransform.position.set((p.x-4.5)*.17,.85+(p.y||0)*.15,1.04+(p.z-4.5)*.17);cellTransform.updateMatrix();cells[c].setMatrixAt(counts[c]++,cellTransform.matrix);}cells.forEach((m,i)=>{m.count=counts[i];m.instanceMatrix.needsUpdate=true;});}
-  let update=()=>{},reset=()=>{},state=()=>({});
+  let update=()=>{},reset=()=>{},state=()=>({}),turnLeft=()=>{};
   if(id==='cubes'){
     let settled=[],piece,x=4,y=10,z=4;
     const shapes=[[[0,0]],[[0,0],[1,0],[0,1],[0,2]],[[0,0],[1,0],[2,0]],[[0,0],[1,0],[0,1],[1,1]]];
@@ -37,6 +37,7 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
     function render(){draw([...settled,...piece.map(([dx,dy])=>({x:x+dx,y:y+dy,z,c:1}))]);}
     function step(){if(valid(x,y-1))y--;else{settled.push(...piece.map(([dx,dy])=>({x:x+dx,y:y+dy,z,c:1})));for(let row=0;row<13;row++){if(settled.filter(b=>b.y===row&&b.z===z).length===10){settled=settled.filter(b=>b.y!==row||b.z!==z).map(b=>({...b,y:b.z===z&&b.y>row?b.y-1:b.y}));score+=10;row--;}}if(score>=30){running=false;ended=true;say('YOU WIN / 30 POINTS / PLAY AGAIN');}else spawn();}render();}
     function move(d){if(running&&valid(x+d,y))x+=d;render();}
+    turnLeft=()=>{if(running){const p=piece.map(([dx,dy])=>[dy,-dx]);if(valid(x,y,p))piece=p;}render();};
     ctl('LEFT',-.65,2.23,()=>move(-1));ctl('RIGHT',0,2.23,()=>move(1));ctl('TURN',.65,2.23,()=>{if(running){const p=piece.map(([dx,dy])=>[-dy,dx]);if(valid(x,y,p))piece=p;}render();});
     ctl('DROP',-.45,2.65,()=>{if(running){while(valid(x,y-1))y--;step();}},.75);
     ctl('START / RESET',.45,2.65,()=>reset(),.85);
@@ -67,5 +68,5 @@ export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart
   const close=button('BACK TO ROOM',1.45,.22,2.15,()=>onClose?.(),root,.7);close.scale.y=.5;close.name='BACK TO ROOM';
   const begin=reset;reset=()=>{notified=false;begin();onRestart?.();};
   ownedTargets.push(...targets.slice(startIndex));
-  return {root,update,reset,get state(){return state();},get score(){return score;},dispose(){for(const t of ownedTargets){const i=targets.indexOf(t);if(i>=0)targets.splice(i,1);}root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geometries.add(o.geometry);for(const m of [].concat(o.material||[]))materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose();});parent.remove(root);}};
+  return {root,update,reset,command(name){if(name==='TURN LEFT')turnLeft();else root.getObjectByName(name)?.userData.action?.();},get running(){return running;},get state(){return state();},get score(){return score;},dispose(){for(const t of ownedTargets){const i=targets.indexOf(t);if(i>=0)targets.splice(i,1);}root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geometries.add(o.geometry);for(const m of [].concat(o.material||[]))materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose();});parent.remove(root);}};
 }
