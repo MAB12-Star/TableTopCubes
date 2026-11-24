@@ -144,8 +144,9 @@ async function loadTexture(url) {
 }
 function interact(mesh,action,parent=scene) {mesh.userData.action=action;targets.push(mesh);parent.add(mesh);return mesh;}
 function button(text,x,y,z,action,parent=scene,width=1.0) {
-  const mesh=createArcadeButton(text,{accent:parent.userData.arcadeAccent});
-  mesh.scale.set(width/1.5,.9,1);mesh.position.set(x,y,z);interact(mesh,action,parent);return mesh;
+  const videoPanel=parent.userData.videoPanelControls===true;
+  const mesh=createArcadeButton(text,{accent:parent.userData.arcadeAccent,resolution:videoPanel?2:1,textSize:videoPanel?58:44,anisotropy:videoPanel?Math.min(8,renderer.capabilities?.getMaxAnisotropy?.()??1):1});
+  mesh.scale.set(width/1.5,videoPanel?width/1.5:.9,1);mesh.position.set(x,y,z);interact(mesh,action,parent);return mesh;
 }
 const tables=[];
 for(const [i,id] of ['cubes','snake','pongo'].entries()) {
@@ -280,7 +281,7 @@ try {
 }
 
 // In-world viewer: interactive even when browser HTML is hidden in immersive VR.
-const viewer=new THREE.Group();viewer.position.set(0,0,1.05);viewer.visible=false;scene.add(viewer);
+const viewer=new THREE.Group();viewer.name='Game video panel';viewer.userData.videoPanelControls=true;viewer.position.set(0,0,1.05);viewer.visible=false;scene.add(viewer);
 box(2.8,2.7,.06,materials.dark,0,2.4,0,viewer);
 box(2.72,.025,.025,materials.glow,0,3.72,.04,viewer);
 let viewerTitle=label('GAMEPLAY',1100,160,'#4df2e0',64);viewerTitle.position.set(0,3.5,.045);viewer.add(viewerTitle);
@@ -289,7 +290,7 @@ const viewerHint=label('SIMPLIFIED WEB SAMPLE / VIDEO SHOWS THE FULL GAME',1500,
 let controlsLegend;
 button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
 const viewerSound=button('SOUND',-.34,1.40,.07,()=>arcadeAudio.toggle(),viewer,.6);
-const viewerMusic=button('MUSIC ON',0,.80,.07,()=>arcadeAudio.toggleMusic(),viewer,1.0);viewerMusic.scale.y=.60;
+const viewerMusic=button('MUSIC ON',0,.80,.07,()=>arcadeAudio.toggleMusic(),viewer,1.0);
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
 button('GET GAME',1.02,1.40,.07,()=>visitStore(storeURL),viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;

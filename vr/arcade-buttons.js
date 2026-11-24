@@ -38,8 +38,9 @@ function glyph(ctx,text){
 export function arcadeButtonStyle(text,accent){
   return{accent:accent??(/WELCOME|START|PLAY|STORE|ITCH|FOLLOW/.test(text)?'#ffc25b':/JOURNEY/.test(text)?'#b28bff':ARCADE_ACCENTS.room)};
 }
-export function paintArcadeButton(canvas,text,accent=ARCADE_ACCENTS.room){
-  const ctx=canvas.getContext('2d');canvas.width=600;canvas.height=160;
+export function paintArcadeButton(canvas,text,accent=ARCADE_ACCENTS.room,{resolution=1,textSize=44}={}){
+  const ctx=canvas.getContext('2d');canvas.width=600*resolution;canvas.height=160*resolution;
+  ctx.setTransform(resolution,0,0,resolution,0,0);
   ctx.clearRect(0,0,600,160);
   // The glow is baked into this small face texture, not a fullscreen bloom pass.
   ctx.shadowColor=accent;ctx.shadowBlur=11;ctx.strokeStyle=accent;ctx.lineWidth=2;
@@ -55,24 +56,24 @@ export function paintArcadeButton(canvas,text,accent=ARCADE_ACCENTS.room){
   shape(ctx,30,43,66,74,9);ctx.fillStyle='#07131d';ctx.fill();ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.stroke();
   glyph(ctx,text);
   ctx.fillStyle='#f0fffc';ctx.textAlign='left';ctx.textBaseline='middle';
-  let size=44;ctx.font=`700 ${size}px Arial`;
+  let size=textSize;ctx.font=`700 ${size}px Arial`;
   while(ctx.measureText(text).width>435&&size>28){size--;ctx.font=`700 ${size}px Arial`;}
   ctx.shadowColor='#000000';ctx.shadowBlur=3;ctx.fillText(text,116,81,435);ctx.shadowBlur=0;
   for(let i=0;i<3;i++){ctx.globalAlpha=1-i*.26;ctx.fillStyle=accent;ctx.fillRect(561,68+i*9,5,4);}ctx.globalAlpha=1;
 }
 
-export function createArcadeButton(text,{accent,canvasFactory=()=>document.createElement('canvas')}={}){
-  const style=arcadeButtonStyle(text,accent),canvas=canvasFactory();paintArcadeButton(canvas,text,style.accent);
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+export function createArcadeButton(text,{accent,resolution=1,textSize=44,anisotropy=1,canvasFactory=()=>document.createElement('canvas')}={}){
+  const style={...arcadeButtonStyle(text,accent),resolution,textSize},canvas=canvasFactory();paintArcadeButton(canvas,text,style.accent,style);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=anisotropy;
   const face=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.4),new THREE.MeshBasicMaterial({map:texture,transparent:true,alphaTest:.02,toneMapped:false}));
   const housing=new THREE.Mesh(new RoundedBoxGeometry(1.47,.37,.065,1,.025),new THREE.MeshStandardMaterial({color:'#080e17',metalness:.48,roughness:.38,emissive:style.accent,emissiveIntensity:.025}));
   housing.name='Arcade button / beveled housing';housing.position.z=-.043;face.add(housing);
-  face.userData.arcadeButton={text,accent:style.accent,housing,hovered:false,pressedUntil:0};
+  face.userData.arcadeButton={...style,text,housing,hovered:false,pressedUntil:0};
   return face;
 }
 export function setArcadeButtonText(face,text){
   const style=face.userData.arcadeButton;if(!style||style.text===text)return;
-  style.text=text;paintArcadeButton(face.material.map.image,text,style.accent);face.material.map.needsUpdate=true;
+  style.text=text;paintArcadeButton(face.material.map.image,text,style.accent,style);face.material.map.needsUpdate=true;
 }
 export function setArcadeButtonFeedback(face,hovered,time=0,pressed=false){
   const style=face?.userData.arcadeButton;if(!style)return;
