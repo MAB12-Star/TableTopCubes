@@ -8,6 +8,7 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {createThumbstickControls} from './thumbsticks.js';
 import {createArcadeAudio} from './audio.js';
+import {createAnimalJourney} from './journey.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -32,6 +33,8 @@ const status = $('#status');
 const enterVR = $('#enter-vr');
 const dialog = $('#details');
 const video = $('#game-video');
+const promoVideo = $('#journey-video');
+let journey,journeyShown=false;
 const arcadeAudio=createArcadeAudio();
 const track=name=>window.trackTableTop?.(name);
 const thumbsticks=createThumbstickControls();
@@ -197,7 +200,7 @@ let navigationNeedsPlacement=true;
 // composed matrixWorld with a local pose, losing the rig offset after teleport.
 function getHeadPosition(){return camera.getWorldPosition(headPosition);}
 function teleportTo(spot){
-  if(!renderer.xr.isPresenting||viewer.visible||!teleportSpots.includes(spot)||performance.now()-lastTeleport<400)return false;
+  if(!renderer.xr.isPresenting||journey?.active||viewer.visible||!teleportSpots.includes(spot)||performance.now()-lastTeleport<400)return false;
   const head=getHeadPosition();
   // Subtract the tracked room offset: the user's head lands at the marker,
   // including after walking physically away from the tracking-space origin.
@@ -208,7 +211,7 @@ function teleportTo(spot){
   return true;
 }
 function stepBack(){
-  if(!renderer.xr.isPresenting||purchase.visible||performance.now()-lastTeleport<400)return false;
+  if(!renderer.xr.isPresenting||journey?.active||purchase.visible||performance.now()-lastTeleport<400)return false;
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)return false;headForward.normalize();
   const x=head.x-headForward.x*.6,z=head.z-headForward.z*.6;
@@ -221,10 +224,11 @@ const stepNav=button('STEP BACK',-.36,0,0,stepBack,roomNavigation,.62);stepNav.s
 const welcomeNav=button('WELCOME',.36,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.62);welcomeNav.scale.y=.60;
 const roomSound=button('SOUND ON / OFF',0,-.32,0,()=>arcadeAudio.toggle(),roomNavigation,1.15);roomSound.scale.y=.60;
 const roomMusic=button('MUSIC ON',0,-.62,0,()=>arcadeAudio.toggleMusic(),roomNavigation,1.15);roomMusic.scale.y=.60;
+const journeyReplay=button('ANIMAL JOURNEY',0,.32,0,()=>startJourney(),roomNavigation,1.15);journeyReplay.scale.y=.60;
 function placeRoomNavigation(){
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
-  roomNavigation.position.set(head.x+headForward.x*2.1,Math.max(.45,head.y-.65),head.z+headForward.z*2.1);
+  roomNavigation.position.set(head.x+headForward.x*2.1,Math.max(1.0,head.y-.65),head.z+headForward.z*2.1);
   roomNavigation.rotation.y=Math.atan2(-headForward.x,-headForward.z);navigationNeedsPlacement=false;
 }
 for(const spot of teleportSpots){
@@ -295,6 +299,7 @@ $('#buy-itch').addEventListener('click',()=>visitStore(itchURL));
 $('#sample-again').addEventListener('click',()=>sample?.reset());
 $('#sample-back').addEventListener('click',closeGame);
 async function openGame(id) {
+  if(journey?.active)return;
   const game=games[id];if(!game)return;
   track(`vr-sample-open-${id}`);thumbsticks.reset();
   sample?.dispose();sample=null;
@@ -348,10 +353,13 @@ video.addEventListener('loadedmetadata',()=>{
   const aspect=video.videoWidth/video.videoHeight,frame=16/9;
   videoScreen.scale.set(aspect<frame?aspect/frame:1,aspect>frame?frame/aspect:1,1);
 });
-function closeGame() {thumbsticks.reset();video.pause();arcadeAudio.setVideoActive(false);video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
-video.addEventListener('play',()=>{arcadeAudio.setVideoActive(true);if(selected)track(`vr-video-play-${selected}`);});
-video.addEventListener('pause',()=>arcadeAudio.setVideoActive(false));
-video.addEventListener('ended',()=>{arcadeAudio.setVideoActive(false);if(selected)track(`vr-video-complete-${selected}`);});
+function closeGame() {thumbsticks.reset();video.pause();arcadeAudio.setVideoActive(!promoVideo.paused);video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+video.addEventListener('play',()=>{promoVideo.pause();arcadeAudio.setVideoActive(true);if(selected)track(`vr-video-play-${selected}`);});
+video.addEventListener('pause',()=>arcadeAudio.setVideoActive(!promoVideo.paused));
+video.addEventListener('ended',()=>{arcadeAudio.setVideoActive(!promoVideo.paused);if(selected)track(`vr-video-complete-${selected}`);});
+promoVideo.addEventListener('play',()=>{video.pause();arcadeAudio.setVideoActive(true);track('vr-promo-play');});
+promoVideo.addEventListener('pause',()=>arcadeAudio.setVideoActive(!video.paused));
+promoVideo.addEventListener('ended',()=>{arcadeAudio.setVideoActive(!video.paused);track('vr-promo-complete');});
 $('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,4.8);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
@@ -369,7 +377,7 @@ const activeTargets=[], hitResults=[];
 function activate(hit){if(!hit)return;arcadeAudio.click();hit.object.userData.action();}
 function hits() {
   activeTargets.length=0;hitResults.length=0;
-  for(const t of targets){let p=t,visible=true,inViewer=false,inPurchase=false;while(p){if(p===viewer)inViewer=true;if(p===purchase)inPurchase=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer)&&(!purchase.visible||inPurchase))activeTargets.push(t);}
+  for(const t of targets){if(journey?.active&&!t.userData.journeyAction)continue;let p=t,visible=true,inViewer=false,inPurchase=false;while(p){if(p===viewer)inViewer=true;if(p===purchase)inPurchase=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer)&&(!purchase.visible||inPurchase))activeTargets.push(t);}
   return raycaster.intersectObjects(activeTargets,false,hitResults);
 }
 canvas.addEventListener('pointerup',e=>{
@@ -402,9 +410,11 @@ renderer.xr.addEventListener('sessionstart',()=>{
   navigationNeedsPlacement=true;
   document.body.classList.add('xr-active');if(dialog.open)dialog.close();closeGame();
   enterVR.textContent='Exit VR';
+  promoVideo.pause();if(!journeyShown){journeyShown=true;startJourney();}
 });
 renderer.xr.addEventListener('sessionend',()=>{
   track('vr-exit');
+  journey?.stop();
   rig.position.set(0,0,0);if(desktopPose){camera.position.copy(desktopPose.position);camera.quaternion.copy(desktopPose.quaternion);}
   controls.enabled=true;controls.update();document.body.classList.remove('xr-active');closeGame();
   teleportGroup.visible=false;
@@ -420,13 +430,15 @@ enterVR.addEventListener('click',async()=>{
   } catch(error){status.textContent='VR could not start. Check headset browser permissions and try again.';console.warn(error);}
   finally{enterVR.disabled=false;}
 });
+$('#start-journey-vr').addEventListener('click',()=>enterVR.click());
+function startJourney(){if(!renderer.xr.isPresenting)return;closeGame();promoVideo.pause();journey?.start();}
 try {
   const supported=!!navigator.xr&&await navigator.xr.isSessionSupported('immersive-vr');
   vrSupported=supported;enterVR.disabled=true;enterVR.textContent=supported?'Enter VR':'Explore in 3D';
   if(!supported)status.textContent='Drag to explore here. Open this page in a supported headset browser for VR.';
 } catch {enterVR.textContent='Explore in 3D';enterVR.disabled=true;}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();arcadeAudio.visibilityChanged();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();promoVideo.pause();}arcadeAudio.visibilityChanged();});
 let previousTime=performance.now();
 await Promise.all(Object.values(games).map(game=>loadTexture(media+game.image).catch(()=>null)));
 loading(75,'Preparing lighting and sample graphics…');
@@ -440,10 +452,16 @@ if(renderer.compileAsync){
   }finally{scene.remove(warmup);}
 }
 loading(100,'Ready to explore');
+const roomObjects=scene.children.filter(o=>o!==rig&&!o.isLight&&!pointers.some(p=>p.dot===o));
+journey=createAnimalJourney({scene,camera,rig,renderer,label,button,targets,audio:arcadeAudio,roomObjects,track,onFinish(){
+  if(renderer.xr.isPresenting){const head=getHeadPosition();rig.position.x-=head.x;rig.position.z+=3.65-head.z;rig.updateMatrixWorld(true);navigationNeedsPlacement=true;}
+}});
 track('vr-room-ready');
 renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
+$('#start-journey-vr').disabled=!vrSupported;
+if(!vrSupported)$('#start-journey-vr').textContent='Open in a VR headset to enter';
 $('#audio-toggle').addEventListener('click',()=>arcadeAudio.toggle());
 for(const selector of ['#music-toggle','#dialog-music-toggle'])$(selector).addEventListener('click',()=>arcadeAudio.toggleMusic());
 $('#music-volume').addEventListener('input',event=>arcadeAudio.setVolume(Number(event.target.value)/100));
@@ -454,7 +472,7 @@ arcadeAudio.subscribe(({muted,musicOff,level})=>{
   if(previousMusicOff!==musicOff){previousMusicOff=musicOff;for(const mesh of [roomMusic,viewerMusic]){const face=label(musicOff?'MUSIC OFF':'MUSIC ON',600,160,'#e4fcfa',50,'#153c4c');mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();}}
   $('#audio-toggle').textContent=muted?'Sound: Off':'Sound: On';$('#audio-toggle').setAttribute('aria-pressed',String(muted));$('#music-volume').value=String(Math.round(level*100));
   if(previousAudioMute!==muted){
-    previousAudioMute=muted;video.muted=muted;
+    previousAudioMute=muted;video.muted=promoVideo.muted=muted;
     for(const mesh of [roomSound,viewerSound]){
       const face=label(muted?'SOUND OFF':'SOUND ON',600,160,muted?'#93a8b7':'#e4fcfa',50,'#153c4c');
       mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();
@@ -467,9 +485,11 @@ document.addEventListener('click',event=>{if(event.target.closest?.('button,a,su
 renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
-    if(!paused)for(const m of companionMixers)m.update(delta);
-    if(renderer.xr.isPresenting&&!purchase.visible&&!dialog.open)thumbsticks.update(renderer.xr.getSession(),selected,sample,time/1000);else thumbsticks.reset();
-    if(!document.hidden&&!dialog.open)sample?.update(delta);
+    if(!renderer.xr.isPresenting&&!promoVideo.paused)return;
+    journey.tick(delta);
+    if(!paused&&!journey.active)for(const m of companionMixers)m.update(delta);
+    if(renderer.xr.isPresenting&&!journey.active&&!purchase.visible&&!dialog.open)thumbsticks.update(renderer.xr.getSession(),selected,sample,time/1000);else thumbsticks.reset();
+    if(!journey.active&&!dialog.open)sample?.update(delta);
     if(!renderer.xr.isPresenting){
       controls.update();
       camera.position.x=THREE.MathUtils.clamp(camera.position.x,-5.65,5.65);
@@ -478,9 +498,10 @@ renderer.setAnimationLoop(time=>{
     }
     else {
       const head=getHeadPosition();
-      if(navigationNeedsPlacement&&head.y>.3)placeRoomNavigation();
-      roomNavigation.visible=!viewer.visible;
-      for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
+      if(navigationNeedsPlacement&&!journey.active&&head.y>.3)placeRoomNavigation();
+      roomNavigation.visible=!viewer.visible&&!journey.active;
+      teleportGroup.visible=!journey.active;
+      for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&!journey.active&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
       for(let i=0;i<controllers.length;i++) {
         castController(controllers[i]);const hit=hits()[0],p=pointers[i];
         p.dot.visible=!!hit&&controllers[i].visible;
@@ -493,4 +514,4 @@ renderer.setAnimationLoop(time=>{
   }
 });
 // Development/device checks can inspect cost without logging every frame.
-window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,stepBack,get sample(){return sample;},get selected(){return selected;}};
+window.tabletopShowroom={renderer,scene,games,openGame,closeGame,teleportTo,teleportSpots,stepBack,journey,get sample(){return sample;},get selected(){return selected;}};

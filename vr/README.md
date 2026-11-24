@@ -2,6 +2,18 @@
 
 Standalone browser showroom at /vr/. The Unity project is unchanged.
 
+## Animal introduction
+
+The approved 40-second Cube World Adventure promo is near the top of Home and first on the VR page. Existing media is retained. The video loads on request and pauses the desktop 3D renderer while playing. Its poster is a frame from the same movie.
+
+First VR entry opens a real 3D introduction, rather than a flat movie: choose Follow the Animals for a moving forest-to-spaceship journey or Stay in Place for fixed viewpoints with a faded scene transition. Physical head rotation and leaning remain tracked. Either hand's browser pinch or either controller trigger selects the shared controls. Skip and Music On/Off remain available; completion returns to the existing arcade. Animal Journey replays it from room navigation.
+
+Scenery is exported from the approved isolated Unity promo set, grouped into 60 material batches / 2,570 instances of one 108-triangle rounded cube. Only the current forest or interior is visible. All twelve original KUBIKOS animals retain their skinned Idle and Walk animation clips (268–1,168 triangles each). Their shared atlas and guarded seats keep heads clear of the game boards. They are embedded scene content, not an asset distribution. The gameplay Unity project is unchanged.
+
+The scenery JSON (~0.4 MB), twelve animal models (~2.2 MB total), and journey music load only on VR entry, with shader preparation before the view opens. The flat movie (~16.6 MB) is separate and does not preload. Journey music uses the user's Gear 180 track and a 127 BPM timing grid; prior mute/volume preferences persist. The original menu track resumes afterward. Aggregate analytics cover promo play/completion and journey open, view choice, skip/completion, and loading failure without motion or profile data.
+
+Additional checks validate all twelve GLBs, actual skeletal motion, scenery matrices, seated height, physical leaning/head orientation, board clearance, both input paths, moving/stationary choices, automatic completion, skip/replay, room restoration, and audio-clock switching. These are CPU/mocked-browser checks. Browser preview access was unavailable; visual rendering and headset performance require a device check. On Quest, enter VR, try Follow, Music and Skip, then replay with Stay in Place and check the existing samples.
+
 ## Experience
 
 - A 12m virtual arcade based on TableTopVirtualRoom.BuildRoom, with six floor teleport destinations and Step Back / Welcome navigation.

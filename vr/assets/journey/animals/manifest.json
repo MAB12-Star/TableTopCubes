@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Penguin",
+    "bytes": 103692,
+    "triangles": 268,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6333332061767578
+      }
+    ]
+  },
+  {
+    "name": "Crocodile",
+    "bytes": 201740,
+    "triangles": 735,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "WhiteFox",
+    "bytes": 186792,
+    "triangles": 547,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Tiger",
+    "bytes": 132940,
+    "triangles": 482,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Unicorn",
+    "bytes": 193296,
+    "triangles": 554,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Hedgehog",
+    "bytes": 198868,
+    "triangles": 872,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Elephant",
+    "bytes": 244576,
+    "triangles": 844,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Giraffe",
+    "bytes": 250444,
+    "triangles": 1168,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Racoon",
+    "bytes": 193020,
+    "triangles": 572,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Gorilla",
+    "bytes": 199828,
+    "triangles": 880,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "WhiteBear",
+    "bytes": 131384,
+    "triangles": 472,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  },
+  {
+    "name": "Rhino",
+    "bytes": 168660,
+    "triangles": 692,
+    "clips": [
+      {
+        "name": "Idle",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "Walk",
+        "duration": 0.6000003814697266
+      }
+    ]
+  }
+]

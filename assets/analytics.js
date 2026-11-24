@@ -21,4 +21,6 @@
     else if(url.origin===location.origin&&url.pathname==='/vr/')window.trackTableTop('site-open-vr-arcade');
   });
   document.addEventListener('play',event=>{if(event.target.tagName==='VIDEO'&&!location.pathname.startsWith('/vr/'))window.trackTableTop('site-video-play');},true);
+  document.addEventListener('play',event=>{if(event.target.dataset?.promo==='cube-world-adventure')window.trackTableTop('site-animal-promo-play');},true);
+  document.addEventListener('ended',event=>{if(event.target.dataset?.promo==='cube-world-adventure')window.trackTableTop('site-animal-promo-complete');},true);
 })();

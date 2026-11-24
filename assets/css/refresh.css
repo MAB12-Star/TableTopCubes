@@ -49,3 +49,4 @@
 @media(max-width:1050px){.latest-clips article{grid-template-columns:1fr}.latest-clips video{max-height:440px}.companion-layout{gap:30px}}
 @media(max-width:760px){.latest-clips,.companion-layout,.fresh-gallery-grid{grid-template-columns:1fr}.latest-clips article{grid-template-columns:1fr minmax(120px,38%);padding:18px;gap:16px}.latest-clips h3{font-size:22px}.latest-clips .eyebrow{font-size:11px}.companion-feature{max-width:480px;margin:auto}.companion-layout .animal-lineup{max-width:420px}}
 @media(max-width:400px){.latest-clips article{grid-template-columns:1fr}.latest-clips video{max-height:420px}}
+.adventure-promo{padding-top:36px}.adventure-promo .actions{margin-top:24px}.adventure-promo .video-shell{border-color:#447a80;box-shadow:0 16px 70px #071920}.adventure-promo video{width:100%;aspect-ratio:16/9;object-fit:contain;background:#030b12}
