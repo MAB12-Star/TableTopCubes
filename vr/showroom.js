@@ -7,6 +7,7 @@ import {installScoreWalls} from './walls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {createThumbstickControls} from './thumbsticks.js';
+import {createArcadeAudio} from './audio.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -31,6 +32,7 @@ const status = $('#status');
 const enterVR = $('#enter-vr');
 const dialog = $('#details');
 const video = $('#game-video');
+const arcadeAudio=createArcadeAudio();
 const track=name=>window.trackTableTop?.(name);
 const thumbsticks=createThumbstickControls();
 let selected = null, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -217,6 +219,7 @@ function stepBack(){
 const roomNavigation=new THREE.Group();roomNavigation.visible=false;scene.add(roomNavigation);
 const stepNav=button('STEP BACK',-.36,0,0,stepBack,roomNavigation,.62);stepNav.scale.y=.60;
 const welcomeNav=button('WELCOME',.36,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.62);welcomeNav.scale.y=.60;
+const roomSound=button('SOUND ON / OFF',0,-.32,0,()=>arcadeAudio.toggle(),roomNavigation,1.15);roomSound.scale.y=.60;
 function placeRoomNavigation(){
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -262,7 +265,7 @@ const videoScreen=new THREE.Mesh(new THREE.PlaneGeometry(2.56,1.44),new THREE.Me
 const viewerHint=label('SIMPLIFIED WEB SAMPLE / VIDEO SHOWS THE FULL GAME',1500,100,'#acbac9',33);viewerHint.scale.setScalar(.68);viewerHint.position.set(0,1.72,.06);viewer.add(viewerHint);
 let controlsLegend;
 button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
-button('SOUND',-.34,1.40,.07,()=>{video.muted=!video.muted;},viewer,.6);
+const viewerSound=button('SOUND',-.34,1.40,.07,()=>arcadeAudio.toggle(),viewer,.6);
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
 button('GET GAME',1.02,1.40,.07,()=>visitStore(storeURL),viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;
@@ -343,9 +346,10 @@ video.addEventListener('loadedmetadata',()=>{
   const aspect=video.videoWidth/video.videoHeight,frame=16/9;
   videoScreen.scale.set(aspect<frame?aspect/frame:1,aspect>frame?frame/aspect:1,1);
 });
-function closeGame() {thumbsticks.reset();video.pause();video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
-video.addEventListener('play',()=>{if(selected)track(`vr-video-play-${selected}`);});
-video.addEventListener('ended',()=>{if(selected)track(`vr-video-complete-${selected}`);});
+function closeGame() {thumbsticks.reset();video.pause();arcadeAudio.setVideoActive(false);video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+video.addEventListener('play',()=>{arcadeAudio.setVideoActive(true);if(selected)track(`vr-video-play-${selected}`);});
+video.addEventListener('pause',()=>arcadeAudio.setVideoActive(false));
+video.addEventListener('ended',()=>{arcadeAudio.setVideoActive(false);if(selected)track(`vr-video-complete-${selected}`);});
 $('#play-sample').addEventListener('click',()=>{dialog.close();document.body.classList.add('sample-active');camera.position.set(0,2.7,4.8);controls.target.set(0,1.5,.1);controls.update();});
 $('#watch-video').addEventListener('click',toggleVideo);
 $('#close-details').addEventListener('click',closeGame);
@@ -360,6 +364,7 @@ let downX=0,downY=0;
 canvas.addEventListener('pointerdown',e=>{downX=e.clientX;downY=e.clientY;});
 canvas.addEventListener('pointermove',e=>{if(dialog.open)return;pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const h=hits()[0];h?.object.userData.aim?.(h.point);});
 const activeTargets=[], hitResults=[];
+function activate(hit){if(!hit)return;arcadeAudio.click();hit.object.userData.action();}
 function hits() {
   activeTargets.length=0;hitResults.length=0;
   for(const t of targets){let p=t,visible=true,inViewer=false,inPurchase=false;while(p){if(p===viewer)inViewer=true;if(p===purchase)inPurchase=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer)&&(!purchase.visible||inPurchase))activeTargets.push(t);}
@@ -368,7 +373,7 @@ function hits() {
 canvas.addEventListener('pointerup',e=>{
   if(Math.hypot(e.clientX-downX,e.clientY-downY)>7||dialog.open)return;
   pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);
-  hits()[0]?.object.userData.action();
+  activate(hits()[0]);
 });
 
 // Both tracked input sources use the same ray selection path. WebXR hand select
@@ -376,7 +381,7 @@ canvas.addEventListener('pointerup',e=>{
 const handFactory=new XRHandModelFactory();
 for(let i=0;i<2;i++) {
   const controller=renderer.xr.getController(i);rig.add(controller);controllers.push(controller);
-  controller.addEventListener('select',()=>{castController(controller);hits()[0]?.object.userData.action();});
+  controller.addEventListener('select',()=>{castController(controller);activate(hits()[0]);});
   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-1)]),new THREE.LineBasicMaterial({color:'#72fff1'}));
   line.scale.z=5;controller.add(line);
   const dot=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),new THREE.MeshBasicMaterial({color:'#f1fffa',depthTest:false}));dot.visible=false;scene.add(dot);pointers.push({line,dot});
@@ -419,7 +424,7 @@ try {
   if(!supported)status.textContent='Drag to explore here. Open this page in a supported headset browser for VR.';
 } catch {enterVR.textContent='Explore in 3D';enterVR.disabled=true;}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();arcadeAudio.visibilityChanged();});
 let previousTime=performance.now();
 await Promise.all(Object.values(games).map(game=>loadTexture(media+game.image).catch(()=>null)));
 loading(75,'Preparing lighting and sample graphics…');
@@ -437,6 +442,22 @@ track('vr-room-ready');
 renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
+$('#audio-toggle').addEventListener('click',()=>arcadeAudio.toggle());
+$('#music-volume').addEventListener('input',event=>arcadeAudio.setVolume(Number(event.target.value)/100));
+let previousAudioMute;
+arcadeAudio.subscribe(({muted,level})=>{
+  $('#audio-toggle').textContent=muted?'Sound: Off':'Sound: On';$('#audio-toggle').setAttribute('aria-pressed',String(muted));$('#music-volume').value=String(Math.round(level*100));
+  if(previousAudioMute!==muted){
+    previousAudioMute=muted;video.muted=muted;
+    for(const mesh of [roomSound,viewerSound]){
+      const face=label(muted?'SOUND OFF':'SOUND ON',600,160,muted?'#93a8b7':'#e4fcfa',50,'#153c4c');
+      mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();
+    }
+  }
+});
+document.addEventListener('pointerdown',()=>arcadeAudio.unlock(),{capture:true});
+document.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')arcadeAudio.unlock();});
+document.addEventListener('click',event=>{if(event.target.closest?.('button,a,summary'))arcadeAudio.click();});
 renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){

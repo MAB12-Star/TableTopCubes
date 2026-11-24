@@ -40,3 +40,11 @@ Three.js 0.187.0, self-hosted in showroom.bundle.js; see THREE-LICENSE.txt. Sour
 Checks include GLB validity and animation, original media preservation, both input-source ray paths, thumbstick dead zone/repeat/edges, three-axis wrapping, 3D Pongo target/paddle/miss rules, seated layout, teleport offsets, lifecycle cleanup, aspect ratios, analytics queue/payloads, SEO metadata and live HTTP assets. Browser/GPU APIs are mocked in interaction tests. Actual headset visuals, physical input, device frame timing and live private analytics totals remain unverified.
 
 Quest test: open https://www.tabletopcubes.com/vr/ in the headset browser, refresh, enter VR, and try both controllers then hands. Check menus, floor teleport, Step Back, all sample controls, thumbsticks, video playback and end-store choices. This does not require a Unity rebuild.
+
+## Webpage audio
+
+Background loop: the user's mixkit-game-level-music-689.wav, normalized to -18 LUFS and exported as 128kbps MP3. UI click: the user's mixkit-modern-technology-select-3124.wav, trimmed to 0.24 seconds with a short fade and MP3 export. Originals remain unchanged.
+
+Music begins only after a user interaction, defaults to quiet volume, and pauses for gameplay videos or a hidden page. The video track remains the only music during video playback. Master mute applies to music, clicks and video; mute and music level persist locally. Desktop has Sound and music-volume controls; in-world room navigation and sample panels have Sound On/Off buttons.
+
+Pointer/pinch/trigger UI selections use one shared click path; direct thumbstick gameplay commands do not spam UI clicks. The short click buffer decodes once, with a tiny synthesized confirmation available on the very first interaction while it loads. Music streams from one looping Audio element. Tests cover user-activation gating, mute persistence, volume limits, click debounce and video/visibility pause-resume. Audio files decode without errors; actual headset output is not verified.
