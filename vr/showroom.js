@@ -194,7 +194,7 @@ const teleportSpots=[
 const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
 const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();
 let lastTeleport=-Infinity;
-let navigationNeedsPlacement=true;
+let navigationNeedsPlacement=true,roomNavigationCompact=false;
 // The application's camera is parented to the rig and receives the tracked pose
 // from WebXRManager. getWorldPosition on the detached ArrayCamera overwrites its
 // composed matrixWorld with a local pose, losing the rig offset after teleport.
@@ -219,17 +219,33 @@ function stepBack(){
   if(Math.abs(x)>5.35||Math.abs(z)>5.35||tables.some(t=>Math.abs(x-t.position.x)<1.55&&Math.abs(z-t.position.z)<1.05)||(Math.abs(x)<.8&&Math.abs(z-.75)<.8))return false;
   rig.position.x+=x-head.x;rig.position.z+=z-head.z;rig.updateMatrixWorld(true);lastTeleport=performance.now();placeRoomNavigation();return true;
 }
-const roomNavigation=new THREE.Group();roomNavigation.visible=false;scene.add(roomNavigation);
+const roomNavigation=new THREE.Group();roomNavigation.name='Room navigation';roomNavigation.visible=false;scene.add(roomNavigation);
 const stepNav=button('STEP BACK',-.36,0,0,stepBack,roomNavigation,.62);stepNav.scale.y=.60;
-const welcomeNav=button('WELCOME',.36,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.62);welcomeNav.scale.y=.60;
+const welcomeNav=button('WELCOME',.36,0,0,()=>{
+  if(!renderer.xr.isPresenting||journey?.active||viewer.visible)return;
+  teleportTo(teleportSpots[0]);setRoomNavigationCompact(true);placeRoomNavigation();
+},roomNavigation,.62);welcomeNav.scale.y=.60;
 const roomSound=button('SOUND ON / OFF',0,-.32,0,()=>arcadeAudio.toggle(),roomNavigation,1.15);roomSound.scale.y=.60;
 const roomMusic=button('MUSIC ON',0,-.62,0,()=>arcadeAudio.toggleMusic(),roomNavigation,1.15);roomMusic.scale.y=.60;
 const journeyReplay=button('ANIMAL JOURNEY',0,.32,0,()=>startJourney(),roomNavigation,1.15);journeyReplay.scale.y=.60;
+for(const [mesh,name] of [[stepNav,'Step Back'],[welcomeNav,'Welcome'],[roomSound,'Sound'],[roomMusic,'Music'],[journeyReplay,'Replay']])mesh.name='Room navigation / '+name;
+function setRoomNavigationCompact(compact){
+  roomNavigationCompact=compact;
+  roomSound.visible=roomMusic.visible=journeyReplay.visible=!compact;
+  for(const [mesh,x,y] of [[stepNav,compact ? 0 : -.36,compact ? -.10 : 0],[welcomeNav,compact ? 0 : .36,compact ? .10 : 0]]){
+    mesh.position.set(x,y,0);mesh.scale.set((compact ? .40 : .62)/1.5,compact ? .30 : .60,1);
+  }
+  navigationNeedsPlacement=true;
+}
 function placeRoomNavigation(){
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
-  roomNavigation.position.set(head.x+headForward.x*2.1,Math.max(1.0,head.y-.65),head.z+headForward.z*2.1);
-  roomNavigation.rotation.y=Math.atan2(-headForward.x,-headForward.z);navigationNeedsPlacement=false;
+  const distance=roomNavigationCompact?1.85:2.1,right=roomNavigationCompact?1.05:0;
+  roomNavigation.position.set(
+    THREE.MathUtils.clamp(head.x+headForward.x*distance-headForward.z*right,-5.5,5.5),
+    Math.max(roomNavigationCompact ? .65 : 1.0,head.y-(roomNavigationCompact ? .42 : .65)),
+    THREE.MathUtils.clamp(head.z+headForward.z*distance+headForward.x*right,-5.5,5.5));
+  roomNavigation.rotation.y=Math.atan2(head.x-roomNavigation.position.x,head.z-roomNavigation.position.z);navigationNeedsPlacement=false;
 }
 for(const spot of teleportSpots){
   const pad=new THREE.Group();pad.position.set(spot.x,.018,spot.z);teleportGroup.add(pad);spot.pad=pad;
@@ -407,7 +423,7 @@ renderer.xr.addEventListener('sessionstart',()=>{
   desktopPose={position:camera.position.clone(),quaternion:camera.quaternion.clone()};
   controls.enabled=false;camera.position.set(0,0,0);camera.quaternion.identity();rig.position.set(0,0,3.65);
   teleportGroup.visible=true;lastTeleport=-Infinity;
-  navigationNeedsPlacement=true;
+  setRoomNavigationCompact(false);
   document.body.classList.add('xr-active');if(dialog.open)dialog.close();closeGame();
   enterVR.textContent='Exit VR';
   promoVideo.pause();if(!journeyShown){journeyShown=true;startJourney();}
@@ -454,7 +470,7 @@ if(renderer.compileAsync){
 loading(100,'Ready to explore');
 const roomObjects=scene.children.filter(o=>o!==rig&&!o.isLight&&!pointers.some(p=>p.dot===o));
 journey=createAnimalJourney({scene,camera,rig,renderer,label,button,targets,audio:arcadeAudio,roomObjects,track,onFinish(){
-  if(renderer.xr.isPresenting){const head=getHeadPosition();rig.position.x-=head.x;rig.position.z+=3.65-head.z;rig.updateMatrixWorld(true);navigationNeedsPlacement=true;}
+  if(renderer.xr.isPresenting){const head=getHeadPosition();rig.position.x-=head.x;rig.position.z+=3.65-head.z;rig.updateMatrixWorld(true);setRoomNavigationCompact(false);}
 }});
 track('vr-room-ready');
 renderer.render(scene,camera);
