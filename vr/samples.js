@@ -4,7 +4,7 @@ import {createPongoSample} from './pongo-sample.js';
 
 // Small browser-native arcade samples, independent of the Unity game rules.
 export function createSample(id,parent,{box,label,button,targets,onEnd,onRestart,onBack,onClose}){
-  const root=new THREE.Group();root.name=`Playable ${id} sample`;parent.add(root);
+  const root=new THREE.Group();root.name=`Playable ${id} sample`;root.userData.arcadeAccent={cubes:'#b28bff',snake:'#53e6ac',pongo:'#ffc25b'}[id];parent.add(root);
   const ownedTargets=[],geometries=new Set(),materials=new Set();
   const startIndex=targets.length;
   const colors=[0x53e6ac,0xb28bff,0xffc25b,0x66bfff,0xff7b9c];

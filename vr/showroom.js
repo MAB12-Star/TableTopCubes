@@ -9,6 +9,7 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {createThumbstickControls} from './thumbsticks.js';
 import {createArcadeAudio} from './audio.js';
 import {createAnimalJourney} from './journey.js';
+import {createArcadeButton,setArcadeButtonText,setArcadeButtonFeedback} from './arcade-buttons.js';
 
 const $ = selector => document.querySelector(selector);
 const media = '../assets/november-2026/';
@@ -48,6 +49,7 @@ const assetManager=new THREE.LoadingManager();
 assetManager.onProgress=(url,loaded,total)=>loading(Math.round(loaded/Math.max(total,1)*65),'Loading original characters and textures…');
 let sample;
 const targets = [], controllers = [], pointers = [], textures = new Map();
+const hoveredButtons=new Set();let desktopHover;
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const rotation = new THREE.Matrix4();
@@ -142,7 +144,7 @@ async function loadTexture(url) {
 }
 function interact(mesh,action,parent=scene) {mesh.userData.action=action;targets.push(mesh);parent.add(mesh);return mesh;}
 function button(text,x,y,z,action,parent=scene,width=1.0) {
-  const mesh=label(text,600,160,'#e4fcfa',50,'#153c4c');
+  const mesh=createArcadeButton(text,{accent:parent.userData.arcadeAccent});
   mesh.scale.set(width/1.5,.9,1);mesh.position.set(x,y,z);interact(mesh,action,parent);return mesh;
 }
 const tables=[];
@@ -388,9 +390,10 @@ function motionUI() {$('#motion').textContent=paused?'Resume animation':'Pause a
 motionUI();$('#motion').addEventListener('click',()=>{paused=!paused;motionUI();});
 let downX=0,downY=0;
 canvas.addEventListener('pointerdown',e=>{downX=e.clientX;downY=e.clientY;});
-canvas.addEventListener('pointermove',e=>{if(dialog.open)return;pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const h=hits()[0];h?.object.userData.aim?.(h.point);});
+canvas.addEventListener('pointermove',e=>{if(dialog.open)return;pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const h=hits()[0];desktopHover=h?.object;h?.object.userData.aim?.(h.point);});
+canvas.addEventListener('pointerleave',()=>{desktopHover=undefined;});
 const activeTargets=[], hitResults=[];
-function activate(hit){if(!hit)return;arcadeAudio.click();hit.object.userData.action();}
+function activate(hit){if(!hit)return;setArcadeButtonFeedback(hit.object,true,performance.now(),true);arcadeAudio.click();hit.object.userData.action();}
 function hits() {
   activeTargets.length=0;hitResults.length=0;
   for(const t of targets){if(journey?.active&&!t.userData.journeyAction)continue;let p=t,visible=true,inViewer=false,inPurchase=false;while(p){if(p===viewer)inViewer=true;if(p===purchase)inPurchase=true;if(!p.visible){visible=false;break;}p=p.parent;}if(visible&&(!viewer.visible||inViewer)&&(!purchase.visible||inPurchase))activeTargets.push(t);}
@@ -485,14 +488,11 @@ let previousAudioMute;
 let previousMusicOff;
 arcadeAudio.subscribe(({muted,musicOff,level})=>{
   for(const selector of ['#music-toggle','#dialog-music-toggle']){$(selector).textContent=musicOff?'Play music':'Stop music';$(selector).setAttribute('aria-pressed',String(musicOff));}
-  if(previousMusicOff!==musicOff){previousMusicOff=musicOff;for(const mesh of [roomMusic,viewerMusic]){const face=label(musicOff?'MUSIC OFF':'MUSIC ON',600,160,'#e4fcfa',50,'#153c4c');mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();}}
+  if(previousMusicOff!==musicOff){previousMusicOff=musicOff;for(const mesh of [roomMusic,viewerMusic])setArcadeButtonText(mesh,musicOff?'MUSIC OFF':'MUSIC ON');}
   $('#audio-toggle').textContent=muted?'Sound: Off':'Sound: On';$('#audio-toggle').setAttribute('aria-pressed',String(muted));$('#music-volume').value=String(Math.round(level*100));
   if(previousAudioMute!==muted){
     previousAudioMute=muted;video.muted=promoVideo.muted=muted;
-    for(const mesh of [roomSound,viewerSound]){
-      const face=label(muted?'SOUND OFF':'SOUND ON',600,160,muted?'#93a8b7':'#e4fcfa',50,'#153c4c');
-      mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();
-    }
+    for(const mesh of [roomSound,viewerSound])setArcadeButtonText(mesh,muted?'SOUND OFF':'SOUND ON');
   }
 });
 document.addEventListener('pointerdown',()=>arcadeAudio.unlock(),{capture:true});
@@ -502,6 +502,7 @@ renderer.setAnimationLoop(time=>{
   const delta=Math.min(Math.max((time-previousTime)/1000,0),.05);previousTime=time;
   if(!document.hidden){
     if(!renderer.xr.isPresenting&&!promoVideo.paused)return;
+    hoveredButtons.clear();
     journey.tick(delta);
     if(!paused&&!journey.active)for(const m of companionMixers)m.update(delta);
     if(renderer.xr.isPresenting&&!journey.active&&!purchase.visible&&!dialog.open)thumbsticks.update(renderer.xr.getSession(),selected,sample,time/1000);else thumbsticks.reset();
@@ -511,6 +512,7 @@ renderer.setAnimationLoop(time=>{
       camera.position.x=THREE.MathUtils.clamp(camera.position.x,-5.65,5.65);
       camera.position.z=THREE.MathUtils.clamp(camera.position.z,-5.65,5.65);
       camera.position.y=THREE.MathUtils.clamp(camera.position.y,.3,4.3);
+      if(!dialog.open&&desktopHover)hoveredButtons.add(desktopHover);
     }
     else {
       const head=getHeadPosition();
@@ -523,9 +525,11 @@ renderer.setAnimationLoop(time=>{
         p.dot.visible=!!hit&&controllers[i].visible;
         p.line.scale.z=hit?hit.distance:4;
         if(hit)p.dot.position.copy(hit.point);
+        if(hit&&controllers[i].visible)hoveredButtons.add(hit.object);
         hit?.object.userData.aim?.(hit.point,controllers[i]);
       }
     }
+    for(const target of targets)if(target.userData.arcadeButton)setArcadeButtonFeedback(target,hoveredButtons.has(target),time);
     renderer.render(scene,camera);
   }
 });
