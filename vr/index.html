@@ -47,7 +47,7 @@
       <button data-game="snake"><span class="number">02</span><span><strong>Cube Snake</strong><small>EAT / GROW</small></span><span class="swatch snake"></span></button>
       <button data-game="pongo"><span class="number">03</span><span><strong>Pongo</strong><small>BOUNCE / AIM</small></span><span class="swatch pongo"></span></button>
     </nav>
-    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
+    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="music-toggle" aria-pressed="false">Music: On</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
     <p class="disclaimer">Simplified browser samples. Their graphics and controls differ from the full Quest game—watch the game-specific footage to see the full experience.</p>
 
     <details class="showroom-guide"><summary>Controls and about these free VR samples</summary>
@@ -74,7 +74,7 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261124-arcade-audio').catch(() => {
+    import('./showroom.bundle.js?v=20261124-music-toggle').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
       document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
       document.querySelector('#loading-progress').hidden=true;

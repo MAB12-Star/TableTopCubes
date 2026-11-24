@@ -220,6 +220,7 @@ const roomNavigation=new THREE.Group();roomNavigation.visible=false;scene.add(ro
 const stepNav=button('STEP BACK',-.36,0,0,stepBack,roomNavigation,.62);stepNav.scale.y=.60;
 const welcomeNav=button('WELCOME',.36,0,0,()=>teleportTo(teleportSpots[0]),roomNavigation,.62);welcomeNav.scale.y=.60;
 const roomSound=button('SOUND ON / OFF',0,-.32,0,()=>arcadeAudio.toggle(),roomNavigation,1.15);roomSound.scale.y=.60;
+const roomMusic=button('MUSIC ON',0,-.62,0,()=>arcadeAudio.toggleMusic(),roomNavigation,1.15);roomMusic.scale.y=.60;
 function placeRoomNavigation(){
   const head=getHeadPosition();camera.getWorldDirection(headForward);headForward.y=0;
   if(headForward.lengthSq()<.01)headForward.set(0,0,-1);else headForward.normalize();
@@ -266,6 +267,7 @@ const viewerHint=label('SIMPLIFIED WEB SAMPLE / VIDEO SHOWS THE FULL GAME',1500,
 let controlsLegend;
 button('VIDEO',-1.02,1.40,.07,()=>toggleVideo(),viewer,.6);
 const viewerSound=button('SOUND',-.34,1.40,.07,()=>arcadeAudio.toggle(),viewer,.6);
+const viewerMusic=button('MUSIC ON',0,.80,.07,()=>arcadeAudio.toggleMusic(),viewer,1.0);viewerMusic.scale.y=.60;
 button('CLOSE',.34,1.40,.07,closeGame,viewer,.6);
 button('GET GAME',1.02,1.40,.07,()=>visitStore(storeURL),viewer,.6);
 textureVideo=new THREE.VideoTexture(video);textureVideo.colorSpace=THREE.SRGBColorSpace;
@@ -443,9 +445,13 @@ renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
 $('#audio-toggle').addEventListener('click',()=>arcadeAudio.toggle());
+$('#music-toggle').addEventListener('click',()=>arcadeAudio.toggleMusic());
 $('#music-volume').addEventListener('input',event=>arcadeAudio.setVolume(Number(event.target.value)/100));
 let previousAudioMute;
-arcadeAudio.subscribe(({muted,level})=>{
+let previousMusicOff;
+arcadeAudio.subscribe(({muted,musicOff,level})=>{
+  $('#music-toggle').textContent=musicOff?'Music: Off':'Music: On';$('#music-toggle').setAttribute('aria-pressed',String(musicOff));
+  if(previousMusicOff!==musicOff){previousMusicOff=musicOff;for(const mesh of [roomMusic,viewerMusic]){const face=label(musicOff?'MUSIC OFF':'MUSIC ON',600,160,'#e4fcfa',50,'#153c4c');mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();}}
   $('#audio-toggle').textContent=muted?'Sound: Off':'Sound: On';$('#audio-toggle').setAttribute('aria-pressed',String(muted));$('#music-volume').value=String(Math.round(level*100));
   if(previousAudioMute!==muted){
     previousAudioMute=muted;video.muted=muted;

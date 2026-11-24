@@ -1,12 +1,12 @@
 // One streaming music loop and a short decoded UI sound. No per-frame work.
 export function createArcadeAudio({AudioClass=globalThis.Audio,ContextClass=globalThis.AudioContext||globalThis.webkitAudioContext,storage,fetchAudio=globalThis.fetch}={}){
-  let muted=false,level=.18,started=false,videoActive=false,context,clickBuffer,clickLoading,lastClick=-Infinity;
-  try{storage??=globalThis.localStorage;muted=storage?.getItem('tabletop.vr.muted')==='1';const saved=storage?.getItem('tabletop.vr.music');if(saved!==null&&saved!==undefined)level=Math.min(.5,Math.max(0,Number(saved)||0));}catch{}
+  let musicOff=false,muted=false,level=.18,started=false,videoActive=false,context,clickBuffer,clickLoading,lastClick=-Infinity;
+  try{storage??=globalThis.localStorage;muted=storage?.getItem('tabletop.vr.muted')==='1';musicOff=storage?.getItem('tabletop.vr.musicOff')==='1';const saved=storage?.getItem('tabletop.vr.music');if(saved!==null&&saved!==undefined)level=Math.min(.5,Math.max(0,Number(saved)||0));}catch{}
   const music=AudioClass?new AudioClass('assets/audio/arcade-music.mp3'):null;
   if(music){music.loop=true;music.preload='none';music.volume=level;}
   const listeners=new Set();
-  function notify(){for(const fn of listeners)fn({muted,level});}
-  function sync(){if(!music)return;music.volume=level;if(!started||muted||videoActive||document.hidden){music.pause();return;}try{music.play()?.catch(()=>{});}catch{}}
+  function notify(){for(const fn of listeners)fn({muted,musicOff,level});}
+  function sync(){if(!music)return;music.volume=level;if(!started||muted||musicOff||videoActive||document.hidden){music.pause();return;}try{music.play()?.catch(()=>{});}catch{}}
   async function unlock(){
     started=true;
     if(!context&&ContextClass){try{context=new ContextClass();}catch{}}
@@ -20,5 +20,5 @@ export function createArcadeAudio({AudioClass=globalThis.Audio,ContextClass=glob
   }
   function toggle(){muted=!muted;try{storage?.setItem('tabletop.vr.muted',muted?'1':'0');}catch{}unlock();notify();return muted;}
   function setVolume(value){level=Math.max(0,Math.min(.5,Number(value)||0));try{storage?.setItem('tabletop.vr.music',String(level));}catch{}sync();notify();}
-  return{unlock,click,toggle,setVolume,setVideoActive(value){videoActive=value;sync();},visibilityChanged:sync,subscribe(fn){listeners.add(fn);fn({muted,level});return()=>listeners.delete(fn);},get muted(){return muted;},get level(){return level;},get music(){return music;},dispose(){music?.pause();music?.removeAttribute('src');context?.close();listeners.clear();}};
+  return{unlock,click,toggle,toggleMusic(){musicOff=!musicOff;try{storage?.setItem('tabletop.vr.musicOff',musicOff?'1':'0');}catch{}unlock();notify();return musicOff;},get musicOff(){return musicOff;},setVolume,setVideoActive(value){videoActive=value;sync();},visibilityChanged:sync,subscribe(fn){listeners.add(fn);fn({muted,musicOff,level});return()=>listeners.delete(fn);},get muted(){return muted;},get level(){return level;},get music(){return music;},dispose(){music?.pause();music?.removeAttribute('src');context?.close();listeners.clear();}};
 }
