@@ -12,6 +12,8 @@ Scenery is exported from the approved isolated Unity promo set, grouped into 60 
 
 The scenery JSON (~0.4 MB), twelve animal models (~2.2 MB total), and journey music load only on VR entry, with shader preparation before the view opens. The flat movie (~16.6 MB) is separate and does not preload. Journey music uses the user's Gear 180 track and a 127 BPM timing grid; prior mute/volume preferences persist. The original menu track resumes afterward. Aggregate analytics cover promo play/completion and journey open, view choice, skip/completion, and loading failure without motion or profile data.
 
+The finale revision uses the song's lift near 1:33: a 128-beat phrase jump at 27.926 seconds moves to source time 1:28.398, with a short beat-aligned crossfade. The last accented downbeat is at 37.847 (source 1:38.320), followed by a filtered stereo echo tail and silence at the file boundary. Both movie versions keep identical decoded video frames. The VR introduction now lasts 40 seconds so its final hit and tail finish before the menu track resumes. The previous movie and music assets remain available; the pages use promo-finale.mp4 and the 3D introduction uses journey-finale.mp3 to avoid stale cached audio.
+
 Additional checks validate all twelve GLBs, actual skeletal motion, scenery matrices, seated height, physical leaning/head orientation, board clearance, both input paths, moving/stationary choices, automatic completion, skip/replay, room restoration, and audio-clock switching. These are CPU/mocked-browser checks. Browser preview access was unavailable; visual rendering and headset performance require a device check. On Quest, enter VR, try Follow, Music and Skip, then replay with Stay in Place and check the existing samples.
 
 ## Experience

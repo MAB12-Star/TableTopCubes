@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 export const JOURNEY_BEAT=60/127;
-export const JOURNEY_TIMES={arrival:8*JOURNEY_BEAT+.052,boarding:16*JOURNEY_BEAT+.052,inside:60*JOURNEY_BEAT+.052,end:76*JOURNEY_BEAT+.052};
+export const JOURNEY_TIMES={arrival:8*JOURNEY_BEAT+.052,boarding:16*JOURNEY_BEAT+.052,inside:60*JOURNEY_BEAT+.052,finalHit:80*JOURNEY_BEAT+.052,end:40};
 const names=['Penguin','Crocodile','WhiteFox','Tiger','Unicorn','Hedgehog','Elephant','Giraffe','Racoon','Gorilla','WhiteBear','Rhino'];
 const stations=[-4.6,0,4.6];
 const clamp=THREE.MathUtils.clamp;
@@ -113,7 +113,7 @@ export function createAnimalJourney({scene,camera,rig,renderer,label,button,targ
     try{loadPromise??=load();await loadPromise;if(current!==token||!renderer.xr.isPresenting)return false;hideRoom();state='prompt';world.visible=true;arcade.visible=false;forest.visible=true;placement=true;elapsed=0;updateWorld(0);title('STEP INTO THE CUBE FOREST');choiceFollow.visible=choiceStill.visible=true;veil.material.opacity=1;return true;}
     catch(e){console.warn('Animal journey could not load',e);if(current===token){title('JOURNEY UNAVAILABLE / SKIP TO ARCADE');track('vr-journey-load-error');}return false;}
   }
-  function choose(value){if(state!=='prompt')return;prepareView();mode=value;state='running';elapsed=0;inside=false;choiceFollow.visible=choiceStill.visible=false;title(mode==='follow'?'FOLLOWING THE ANIMALS':'LOOK AROUND THE FOREST');audio.setMusicSource?.(assetBase+'journey-music.mp3',()=>elapsed);audio.unlock();track('vr-journey-'+mode);}
+  function choose(value){if(state!=='prompt')return;prepareView();mode=value;state='running';elapsed=0;inside=false;choiceFollow.visible=choiceStill.visible=false;title(mode==='follow'?'FOLLOWING THE ANIMALS':'LOOK AROUND THE FOREST');audio.setMusicSource?.(assetBase+'journey-finale.mp3',()=>elapsed);audio.unlock();track('vr-journey-'+mode);}
   function restore(){world.visible=false;hud.visible=false;if(snapshot){for(const[o,visible]of snapshot.nodes)o.visible=visible;scene.background=snapshot.background;scene.fog=snapshot.fog;scene.environmentIntensity=snapshot.environment;camera.far=snapshot.far;camera.updateProjectionMatrix();rig.position.copy(snapshot.rig);rig.updateMatrixWorld(true);snapshot=undefined;}audio.setMusicSource?.('assets/audio/arcade-music.mp3');}
   function finish(reason='complete'){if(state==='idle')return;++token;restore();state='outro';fadeTime=0;veil.material.opacity=1;track('vr-journey-'+reason);onFinish(reason);}
   function stop(){++token;restore();state='idle';veil.material.opacity=0;}
@@ -144,7 +144,7 @@ export function createAnimalJourney({scene,camera,rig,renderer,label,button,targ
     if(state==='prompt'){veil.material.opacity=Math.max(0,veil.material.opacity-delta*2);return;}
     elapsed+=delta;if(!audio.music?.paused&&audio.music?.currentTime>0)elapsed=Math.max(elapsed,audio.music.currentTime);
     if(elapsed>=JOURNEY_TIMES.end){finish();return;}
-    const crossing=Math.abs(elapsed-JOURNEY_TIMES.inside);veil.material.opacity=Math.max(Math.max(0,1-elapsed/.55),clamp(1-crossing/.5,0,1));
+    const crossing=Math.abs(elapsed-JOURNEY_TIMES.inside);veil.material.opacity=Math.max(Math.max(0,1-elapsed/.55),clamp(1-crossing/.5,0,1),clamp((elapsed-(JOURNEY_TIMES.end-.4))/.4,0,1));
     const path=journeyPath(elapsed,mode),head=camera.getWorldPosition(new THREE.Vector3());
     if(elapsed>=JOURNEY_TIMES.inside&&!inside){inside=true;title('WELCOME TO GAME NIGHT');}
     if(!placement){rig.position.copy(trackingOffset).add(new THREE.Vector3(path.x,path.y,path.z));rig.updateMatrixWorld(true);}
