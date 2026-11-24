@@ -13,3 +13,4 @@
 .showroom-guide{position:relative;max-width:780px;margin:20px auto 35px;padding:16px 22px;border:1px solid #274554;background:#081722ed;color:#adc5d1}.showroom-guide summary{cursor:pointer;color:#75dcd1}.showroom-guide h2{font-size:28px;margin:18px 0}.showroom-guide h3{color:#e7f4f5;font-size:18px}.showroom-guide a{color:#75dcd1}.showroom-guide p{font-size:15px}.sample-active .showroom-guide{display:none}
 
 .room-hints label{display:flex;align-items:center;gap:8px;font-size:12px}.room-hints input[type=range]{width:85px;accent-color:#4df2e0}
+.music-control{border:2px solid #4df2e0;background:#071b27;color:#dffff8;font:700 16px 'DM Sans',sans-serif;padding:12px 18px;border-radius:7px;box-shadow:0 6px 24px #0008;cursor:pointer}#music-toggle{position:fixed;right:22px;bottom:22px;z-index:30}.music-control:hover{background:#164139}.xr-active #music-toggle{display:none}@media(max-width:600px){#music-toggle{right:12px;bottom:12px;padding:10px 14px}}

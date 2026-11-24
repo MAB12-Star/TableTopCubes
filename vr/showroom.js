@@ -445,12 +445,12 @@ renderer.render(scene,camera);
 $('#loading-screen').hidden=true;
 enterVR.disabled=!vrSupported;
 $('#audio-toggle').addEventListener('click',()=>arcadeAudio.toggle());
-$('#music-toggle').addEventListener('click',()=>arcadeAudio.toggleMusic());
+for(const selector of ['#music-toggle','#dialog-music-toggle'])$(selector).addEventListener('click',()=>arcadeAudio.toggleMusic());
 $('#music-volume').addEventListener('input',event=>arcadeAudio.setVolume(Number(event.target.value)/100));
 let previousAudioMute;
 let previousMusicOff;
 arcadeAudio.subscribe(({muted,musicOff,level})=>{
-  $('#music-toggle').textContent=musicOff?'Music: Off':'Music: On';$('#music-toggle').setAttribute('aria-pressed',String(musicOff));
+  for(const selector of ['#music-toggle','#dialog-music-toggle']){$(selector).textContent=musicOff?'Play music':'Stop music';$(selector).setAttribute('aria-pressed',String(musicOff));}
   if(previousMusicOff!==musicOff){previousMusicOff=musicOff;for(const mesh of [roomMusic,viewerMusic]){const face=label(musicOff?'MUSIC OFF':'MUSIC ON',600,160,'#e4fcfa',50,'#153c4c');mesh.material.map.dispose();mesh.material.map=face.material.map;mesh.material.needsUpdate=true;face.geometry.dispose();face.material.dispose();}}
   $('#audio-toggle').textContent=muted?'Sound: Off':'Sound: On';$('#audio-toggle').setAttribute('aria-pressed',String(muted));$('#music-volume').value=String(Math.round(level*100));
   if(previousAudioMute!==muted){

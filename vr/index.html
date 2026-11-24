@@ -16,7 +16,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
-  <link rel="stylesheet" href="showroom.css?v=20261124-audio">
+  <link rel="stylesheet" href="showroom.css?v=20261124-visible-music">
 <script defer src="../assets/analytics.js?v=20261123"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "TableTop Cubes VR Arcade Preview", "url": "https://www.tabletopcubes.com/vr/", "applicationCategory": "GameApplication", "operatingSystem": "WebXR-compatible browser", "isAccessibleForFree": true, "description": "Free simplified browser samples of Cubes, 3D Cube Snake and Pongo, with real gameplay videos from the full Meta Quest game.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "CC Creations", "url": "https://www.tabletopcubes.com/"}, "image": "https://www.tabletopcubes.com/assets/november-2026/menu.webp"}</script>
 </head>
@@ -30,6 +30,7 @@
   </section>
   <a class="skip" href="#games">Skip to game displays</a>
   <canvas id="room" aria-label="Interactive 3D arcade showroom. Use the game buttons below for an accessible alternative."></canvas>
+  <button id="music-toggle" class="music-control" aria-pressed="false" title="Stop background music; keep UI clicks">Stop music</button>
   <header class="topbar">
     <a class="brand" href="../"><img src="../assets/refresh/icon.png" width="36" height="36" alt="">TABLETOP <span>CUBES</span></a>
     <a class="back" href="../">Back to website</a>
@@ -47,7 +48,7 @@
       <button data-game="snake"><span class="number">02</span><span><strong>Cube Snake</strong><small>EAT / GROW</small></span><span class="swatch snake"></span></button>
       <button data-game="pongo"><span class="number">03</span><span><strong>Pongo</strong><small>BOUNCE / AIM</small></span><span class="swatch pongo"></span></button>
     </nav>
-    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="music-toggle" aria-pressed="false">Music: On</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
+    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
     <p class="disclaimer">Simplified browser samples. Their graphics and controls differ from the full Quest game—watch the game-specific footage to see the full experience.</p>
 
     <details class="showroom-guide"><summary>Controls and about these free VR samples</summary>
@@ -64,7 +65,7 @@
     <div class="detail-copy"><p class="eyebrow">SOLO + TWO PLAYER</p><h2 id="detail-title">Cubes</h2><p id="detail-description"></p></div>
     <video id="game-video" controls playsinline preload="none" poster="../assets/november-2026/cubes-solo.webp" aria-label="TableTop gameplay video"></video>
     <p id="detail-help"></p>
-    <div class="detail-actions"><button id="play-sample">Play mini sample</button><button id="watch-video">Watch gameplay</button><a class="store" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest</a></div>
+    <div class="detail-actions"><button id="dialog-music-toggle" class="music-control" aria-pressed="false">Stop music</button><button id="play-sample">Play mini sample</button><button id="watch-video">Watch gameplay</button><a class="store" href="https://www.meta.com/en-gb/experiences/tabletop-cubes/7959598814120845/">Explore on Meta Quest</a></div>
     <p class="video-note">Real footage of this game. The browser sample has simplified graphics and controls; the video shows the full Quest experience.</p>
   </dialog>
   <section id="sample-result" class="sample-result" hidden aria-labelledby="sample-result-title">
@@ -74,7 +75,7 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261124-music-toggle').catch(() => {
+    import('./showroom.bundle.js?v=20261124-visible-music').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
       document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
       document.querySelector('#loading-progress').hidden=true;
