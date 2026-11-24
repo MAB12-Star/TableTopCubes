@@ -522,6 +522,7 @@ renderer.setAnimationLoop(time=>{
       for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&!journey.active&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
       for(let i=0;i<controllers.length;i++) {
         castController(controllers[i]);const hit=hits()[0],p=pointers[i];
+        p.line.visible=!journey.active||journey.hud.visible;
         p.dot.visible=!!hit&&controllers[i].visible;
         p.line.scale.z=hit?hit.distance:4;
         if(hit)p.dot.position.copy(hit.point);

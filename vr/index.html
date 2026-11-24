@@ -37,7 +37,7 @@
   </header>
   <main>
     <section class="journey-promo" aria-labelledby="journey-title">
-      <div><p class="eyebrow">TWELVE LITTLE FRIENDS. ONE BIG ADVENTURE.</p><h2 id="journey-title">Follow them<br>into the arcade.</h2><p>Watch the new animated promo, or step into its 3D forest in VR. Look around as the animals board their spaceship and start game night.</p><button id="start-journey-vr" disabled>Enter the VR journey</button><p class="journey-note">In VR, choose <strong>Follow the animals</strong> for a moving view or <strong>Stay in place</strong>. Pinch either hand or use either controller’s trigger. Skip and music controls stay available.</p></div>
+      <div><p class="eyebrow">TWELVE LITTLE FRIENDS. ONE BIG ADVENTURE.</p><h2 id="journey-title">Follow them<br>into the arcade.</h2><p>Watch the new animated promo, or step into its 3D forest in VR. Look around as the animals board their spaceship and start game night.</p><button id="start-journey-vr" disabled>Enter the VR journey</button><p class="journey-note">In VR, choose <strong>Follow the animals</strong> for a moving view or <strong>Stay in place</strong>. Pinch either hand or use either controller’s trigger. Adjust music or skip before starting. The menu disappears once you choose a view.</p></div>
       <div><video id="journey-video" controls playsinline preload="none" poster="../assets/cube-world-adventure/poster.webp" aria-label="Cube World Adventure animated animal promo"><source src="../assets/cube-world-adventure/promo-finale.mp4" type="video/mp4"><a href="../assets/cube-world-adventure/promo-finale.mp4">Watch Cube World Adventure</a></video><p class="journey-note">A fantasy promotional adventure with all twelve original animal models. The separately labeled Quest clips show the full game.</p></div>
     </section>
     <section class="intro" aria-labelledby="title">
@@ -79,7 +79,7 @@
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
   <script type="module">
-    import('./showroom.bundle.js?v=20261124-arcade-buttons').catch(() => {
+    import('./showroom.bundle.js?v=20261124-clear-journey').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
       document.querySelector('#loading-detail').textContent='Please refresh, or return to the website to watch gameplay.';
       document.querySelector('#loading-progress').hidden=true;
