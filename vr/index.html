@@ -16,7 +16,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://www.tabletopcubes.com/vr/">
   <link rel="icon" href="../assets/refresh/icon.png">
-  <link rel="stylesheet" href="showroom.css?v=20261124-animal-finale">
+  <link rel="stylesheet" href="showroom.css?v=20261125-close-intro">
 <script defer src="../assets/analytics.js?v=20261124-adventure"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "TableTop Cubes VR Arcade Preview", "url": "https://www.tabletopcubes.com/vr/", "applicationCategory": "GameApplication", "operatingSystem": "WebXR-compatible browser", "isAccessibleForFree": true, "description": "Free simplified browser samples of Cubes, 3D Cube Snake and Pongo, with real gameplay videos from the full Meta Quest game.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "CC Creations", "url": "https://www.tabletopcubes.com/"}, "image": "https://www.tabletopcubes.com/assets/november-2026/menu.webp"}</script>
 </head>
@@ -36,8 +36,9 @@
     <a class="back" href="../">Back to website</a>
   </header>
   <main>
-    <section class="journey-promo" aria-labelledby="journey-title">
-      <div><p class="eyebrow">TWELVE LITTLE FRIENDS. ONE BIG ADVENTURE.</p><h2 id="journey-title">Follow them<br>into the arcade.</h2><p>Watch the new animated promo, or step into its 3D forest in VR. Look around as the animals board their spaceship and start game night.</p><button id="start-journey-vr" disabled>Enter the VR journey</button><p class="journey-note">In VR, choose <strong>Follow the animals</strong> for a moving view or <strong>Stay in place</strong>. Pinch either hand or use either controller’s trigger. Adjust music or skip before starting. The menu disappears once you choose a view.</p></div>
+    <section class="journey-promo" id="journey-promo" aria-labelledby="journey-title">
+      <div class="journey-promo-header"><button id="close-journey-promo" aria-label="Close introduction and enter the arcade">Close intro <span aria-hidden="true">×</span></button></div>
+      <div><p class="eyebrow">TWELVE LITTLE FRIENDS. ONE BIG ADVENTURE.</p><h2 id="journey-title">Follow them<br>into the arcade.</h2><p>Watch the new animated promo, or step into its 3D forest in VR. Look around as the animals board their spaceship and start game night.</p><div class="journey-actions"><button id="explore-arcade">Enter arcade</button><button id="start-journey-vr" disabled>Enter the VR journey</button></div><p class="journey-note">Play the free samples here on your phone or computer—no headset needed. In VR, choose <strong>Follow the animals</strong> for a moving view or <strong>Stay in place</strong>. Pinch either hand or use either controller’s trigger. Adjust music or skip before starting.</p></div>
       <div><video id="journey-video" controls playsinline preload="none" poster="../assets/cube-world-adventure/poster.webp" aria-label="Cube World Adventure animated animal promo"><source src="../assets/cube-world-adventure/promo-finale.mp4" type="video/mp4"><a href="../assets/cube-world-adventure/promo-finale.mp4">Watch Cube World Adventure</a></video><p class="journey-note">A fantasy promotional adventure with all twelve original animal models. The separately labeled Quest clips show the full game.</p></div>
     </section>
     <section class="intro" aria-labelledby="title">
@@ -47,12 +48,12 @@
       <div id="xr-entry"><button id="enter-vr" disabled>Checking VR support…</button></div>
       <p id="status" role="status">Preparing the showroom…</p>
     </section>
-    <nav class="game-dock" id="games" aria-label="Explore a game">
+    <nav class="game-dock" id="games" aria-label="Explore a game" tabindex="-1">
       <button data-game="cubes"><span class="number">01</span><span><strong>Cubes</strong><small>STACK / CLEAR</small></span><span class="swatch cubes"></span></button>
       <button data-game="snake"><span class="number">02</span><span><strong>Cube Snake</strong><small>EAT / GROW</small></span><span class="swatch snake"></span></button>
       <button data-game="pongo"><span class="number">03</span><span><strong>Pongo</strong><small>BOUNCE / AIM</small></span><span class="swatch pongo"></span></button>
     </nav>
-    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
+    <div class="room-hints"><span>Drag to look · Scroll to zoom · Select a display</span><button id="open-journey-promo" aria-controls="journey-promo" aria-expanded="true" hidden>Animal intro</button><button id="reset-view">Reset view</button><button id="motion" aria-pressed="false">Pause animation</button><button id="audio-toggle" aria-pressed="false">Sound: On</button><label for="music-volume">Music <input id="music-volume" type="range" min="0" max="50" step="1" value="18"></label></div>
     <p class="disclaimer">Simplified browser samples. Their graphics and controls differ from the full Quest game—watch the game-specific footage to see the full experience.</p>
 
     <details class="showroom-guide"><summary>Controls and about these free VR samples</summary>
@@ -78,6 +79,7 @@
     <div class="detail-actions"><button id="buy-meta">Meta Store</button><button id="buy-itch">itch.io</button><button id="sample-again">Play Again</button><button id="sample-back">Back to Room</button></div>
   </section>
   <noscript><div class="fallback">Enable JavaScript to explore the room, or <a href="../#latest-media">watch the gameplay videos on our website</a>.</div></noscript>
+  <script defer src="showroom-ui.js?v=20261125-close-intro"></script>
   <script type="module">
     import('./showroom.bundle.js?v=20261124-sharp-video-controls').catch(() => {
       document.querySelector('#loading-title').textContent='The arcade could not load';
