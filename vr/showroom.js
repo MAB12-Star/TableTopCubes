@@ -151,6 +151,7 @@ function button(text,x,y,z,action,parent=scene,width=1.0) {
 const tables=[];
 for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const game=games[id], table=new THREE.Group();
+  table.name=`Arcade cabinet / ${id}`;
   table.position.set((i-1)*2.65,0,i===1?-3.0:-2.3);
   table.rotation.y=(1-i)*.23;scene.add(table);tables.push(table);
   const accent=new THREE.MeshBasicMaterial({color:game.color,toneMapped:false});
@@ -175,16 +176,17 @@ for(const [i,id] of ['cubes','snake','pongo'].entries()) {
   const playText=label('PLAY',400,120,'#06131d',64);playText.scale.setScalar(.32);playText.position.set(0,1.02,.72);table.add(playText);
 }
 // A real imported KUBIKOS model, converted to GLB; original UVs and idle keys retained.
-const pedestal=box(.95,.46,.85,materials.dark,0,.25,.75);pedestal.name='Companion arcade pedestal';pedestal.castShadow=true;
+const companionDisplay=new THREE.Group();companionDisplay.name='Companion display';scene.add(companionDisplay);
+const pedestal=box(.95,.46,.85,materials.dark,0,.25,.75,companionDisplay);pedestal.name='Companion arcade pedestal';pedestal.castShadow=true;
 pedestal.geometry.dispose();pedestal.geometry=new RoundedBoxGeometry(.95,.46,.85,2,.045);
-const displayTop=box(1.02,.055,.90,materials.table,0,.4975,.75);displayTop.geometry.dispose();displayTop.geometry=new RoundedBoxGeometry(1.02,.055,.90,2,.025);displayTop.castShadow=true;
-box(1.01,.065,.91,materials.dark,0,.0325,.75);
+const displayTop=box(1.02,.055,.90,materials.table,0,.4975,.75,companionDisplay);displayTop.geometry.dispose();displayTop.geometry=new RoundedBoxGeometry(1.02,.055,.90,2,.025);displayTop.castShadow=true;
+box(1.01,.065,.91,materials.dark,0,.0325,.75,companionDisplay);
 const pedestalNeon=new THREE.MeshBasicMaterial({color:'#55d6ce',toneMapped:false});
-for(const x of [-.48,.48])box(.014,.012,.82,pedestalNeon,x,.525,.75);
-for(const z of [.34,1.16])box(.96,.012,.014,pedestalNeon,0,.525,z);
-for(const x of [-.435,.435])box(.012,.32,.012,pedestalNeon,x,.25,1.182);
-for(let slot=0;slot<5;slot++)box(.032,.14,.018,materials.table,(slot-2)*.09,.19,1.185);
-const companionLabel=label('COMPANION CLUB',1000,160,'#a4e8e3',52,'#08131d');companionLabel.scale.setScalar(.31);companionLabel.position.set(0,.37,1.187);scene.add(companionLabel);
+for(const x of [-.48,.48])box(.014,.012,.82,pedestalNeon,x,.525,.75,companionDisplay);
+for(const z of [.34,1.16])box(.96,.012,.014,pedestalNeon,0,.525,z,companionDisplay);
+for(const x of [-.435,.435])box(.012,.32,.012,pedestalNeon,x,.25,1.182,companionDisplay);
+for(let slot=0;slot<5;slot++)box(.032,.14,.018,materials.table,(slot-2)*.09,.19,1.185,companionDisplay);
+const companionLabel=label('COMPANION CLUB',1000,160,'#a4e8e3',52,'#08131d');companionLabel.scale.setScalar(.31);companionLabel.position.set(0,.37,1.187);companionDisplay.add(companionLabel);
 // Fixed destinations stay in clear floor space, outside tables and the pedestal.
 const teleportSpots=[
   {name:'WELCOME',x:0,z:3.65},
@@ -194,7 +196,7 @@ const teleportSpots=[
   {name:'RANKINGS',x:-4.2,z:1.8},
   {name:'CHAMPIONS',x:4.2,z:1.8}
 ];
-const teleportGroup=new THREE.Group();teleportGroup.visible=false;scene.add(teleportGroup);
+const teleportGroup=new THREE.Group();teleportGroup.name='Teleport destinations';teleportGroup.visible=false;scene.add(teleportGroup);
 const headPosition=new THREE.Vector3(),headForward=new THREE.Vector3();
 let lastTeleport=-Infinity;
 let navigationNeedsPlacement=true,roomNavigationCompact=false;
@@ -271,7 +273,7 @@ try {
     companion.scale.setScalar(Math.min(.36/size.y,.30/size.x,.40/size.z));
     const scaled=new THREE.Box3().setFromObject(companion),center=scaled.getCenter(new THREE.Vector3());
     companion.position.set((i-1)*.31-center.x,.53-scaled.min.y,.75-center.z);
-    scene.add(companion);mixer=new THREE.AnimationMixer(companion);companionMixers.push(mixer);
+    companionDisplay.add(companion);mixer=new THREE.AnimationMixer(companion);companionMixers.push(mixer);
     if(gltf.animations[0])mixer.clipAction(gltf.animations[0]).play();
   });
   status.textContent='Room ready. Select a game to explore.';
@@ -323,7 +325,8 @@ async function openGame(id) {
   track(`vr-sample-open-${id}`);thumbsticks.reset();
   sample?.dispose();sample=null;
   purchase.visible=false;$('#sample-result').hidden=true;
-  tables.forEach((t,i)=>t.visible=['cubes','snake','pongo'][i]!==id);
+  // The sample replaces the exhibits, leaving its board and controls unobstructed.
+  companionDisplay.visible=false;tables.forEach(t=>t.visible=false);teleportGroup.visible=false;
   video.pause();selected=id;
   videoScreen.scale.set(1,1,1);
   video.removeAttribute('src');video.load();video.poster=media+game.image;
@@ -372,7 +375,7 @@ video.addEventListener('loadedmetadata',()=>{
   const aspect=video.videoWidth/video.videoHeight,frame=16/9;
   videoScreen.scale.set(aspect<frame?aspect/frame:1,aspect>frame?frame/aspect:1,1);
 });
-function closeGame() {thumbsticks.reset();video.pause();arcadeAudio.setVideoActive(!promoVideo.paused);video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;tables.forEach(t=>t.visible=true);viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
+function closeGame() {thumbsticks.reset();video.pause();arcadeAudio.setVideoActive(!promoVideo.paused);video.removeAttribute('src');video.load();sample?.dispose();sample=null;purchase.visible=false;$('#sample-result').hidden=true;companionDisplay.visible=true;tables.forEach(t=>t.visible=true);teleportGroup.visible=renderer.xr.isPresenting&&!journey?.active;viewer.visible=false;selected=null;document.body.classList.remove('sample-active');if(dialog.open)dialog.close();}
 video.addEventListener('play',()=>{promoVideo.pause();arcadeAudio.setVideoActive(true);if(selected)track(`vr-video-play-${selected}`);});
 video.addEventListener('pause',()=>arcadeAudio.setVideoActive(!promoVideo.paused));
 video.addEventListener('ended',()=>{arcadeAudio.setVideoActive(!promoVideo.paused);if(selected)track(`vr-video-complete-${selected}`);});
@@ -505,7 +508,7 @@ renderer.setAnimationLoop(time=>{
     if(!renderer.xr.isPresenting&&!promoVideo.paused)return;
     hoveredButtons.clear();
     journey.tick(delta);
-    if(!paused&&!journey.active)for(const m of companionMixers)m.update(delta);
+    if(!paused&&!journey.active&&companionDisplay.visible)for(const m of companionMixers)m.update(delta);
     if(renderer.xr.isPresenting&&!journey.active&&!purchase.visible&&!dialog.open)thumbsticks.update(renderer.xr.getSession(),selected,sample,time/1000);else thumbsticks.reset();
     if(!journey.active&&!dialog.open)sample?.update(delta);
     if(!renderer.xr.isPresenting){
@@ -519,7 +522,7 @@ renderer.setAnimationLoop(time=>{
       const head=getHeadPosition();
       if(navigationNeedsPlacement&&!journey.active&&head.y>.3)placeRoomNavigation();
       roomNavigation.visible=!viewer.visible&&!journey.active;
-      teleportGroup.visible=!journey.active;
+      teleportGroup.visible=!viewer.visible&&!journey.active;
       for(const spot of teleportSpots)spot.pad.visible=!viewer.visible&&!journey.active&&Math.hypot(head.x-spot.x,head.z-spot.z)>.6;
       for(let i=0;i<controllers.length;i++) {
         castController(controllers[i]);const hit=hits()[0],p=pointers[i];

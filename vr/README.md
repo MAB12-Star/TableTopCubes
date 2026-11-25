@@ -43,6 +43,8 @@ Exhibits fit to eye height without changing headset tracking. Control rows share
 
 A sample ending offers Meta Store, itch.io, Play Again and Back to Room. Store selection explicitly exits VR before navigation. One sample runs at a time; its targets, buffers and generated textures are released on close/switch.
 
+Opening any sample hides the three showroom cabinets, the entire central animal pedestal (animals, trim and label), and floor navigation markers. They stay hidden through gameplay and its end screen, then return on Close or Back to Room. Hidden companions also pause their animation work. This clears the play area without changing camera placement or headset tracking, and reuses the existing room objects rather than rebuilding them.
+
 ## Media
 
 Videos: Cubes source 182-202s, Snake 373-393s, Pongo 548-568s from the user's Nov22 1:00 PM solo recording. Exports are 1280x720 / 30fps / 20s with fit/pad and square pixels. WhatsApp source is about 480p: these exports are upscaled, not restored native HD. Original conversation is omitted; the user's existing Mixkit689 music is quiet background audio. No prior site media was removed. Runtime video fitting also prevents stretching unusual aspect ratios.
